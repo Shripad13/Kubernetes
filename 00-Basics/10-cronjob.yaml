@@ -1,0 +1,21 @@
+## This is like a scheduled job which runs at a specific time interval as a batch , whenever it meets the schedule it deploys a job that runs a pod with th mentioned configuration.
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: hello
+spec:
+  schedule: "* * * * *"       # Here schedule can be given with linux cron schedule format
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: hello
+            image: busybox:1.28
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - date; echo Hello from the Kubernetes cluster
+          restartPolicy: OnFailure

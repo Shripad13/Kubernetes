@@ -14,3 +14,7 @@ spec:
   containers:
     - name: nginx
       image: nginx:perl
+
+
+# kubectl get all            ----> To see all resources in the default namespace
+# kubectl get all -n expense ----> To see all resources in the 'expense' namespace      
