@@ -476,8 +476,12 @@ How do you know application is healthy or not?
 $ kubectl get hpa
 $ kubectl get vpa
 
+## How EKS Cluster Autoscaling Works?
+  1. Just like how pods HPA works, likewise with in the min & max values of the EKS Cluster Nodepool, the number of nodes would upsized & downsize automatically.
+  2. what will happen if the pod that you are trying to scale is a big pod & curremt pod cannot accomodate? (pod goes to pending state & that craetes an event to add one more node in the cluster node pool) 
 
-* VPA: Vertical   Pod Autoscaling ("scaling in"): (Adding resources to the same instance)
+
+## VPA: Vertical   Pod Autoscaling ("scaling up"): (Adding resources to the same instance)
 VPA ex - updating instance from t3.micro  to t3.medium invloves downtime 
 In any cloud, scaling a resource vertically always involves DOWNTIME.
 Vertical scaing is always Costly.
@@ -487,11 +491,28 @@ add CPU
 increase RAM
 upgrade OS/hardware
 
+Vertical Pod Autoscaler (VPA) is a Kubernetes feature that automates the process of adjusting resource limits for containers in pods. Unlike Horizontal Pod Autoscaler (HPA), which scales the number of replicas of a pod, VPA scales the resources allocated to a pod's containers. It adjusts the resource requests and limits for each container based on its actual usage.
+
+
+  1. This helps in adding resources to the pod by taking down the pod that experiencing resources stress with a new pod with more resources.
+  2. VPA always involves downtime
+  3. VPA is additional feature ,we need to enable vpa-admission-controller on eks cluster.
+Search on Goggle to perform the installation. 
+
+VPA Operates in 2 modes:
+  * Manual Mode -   (Pods will be upsized & downsized automatically: but involves downtime)
+  * Atomatic Mode - (When you enable in autoMode, you just get suggestions) 
+
+
+Both HPA & VPA CANNOT be used for same deployments.
+
 * Why servers with high CPU & Memory are costly when compare in proportional to small servers.
 Size of the server increases cost will also increases.
 
 
 * HPA: Horizontal Pod Autoscaling ("scaling out")- involves no DOWNTIME.
+
+HPA only work when you mention resources requests & limits in manifest file.
 
 Horizontal scaling means adding more machines/instances instead of upgrading a single one.
 
