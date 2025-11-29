@@ -480,6 +480,21 @@ $ kubectl get vpa
   1. Just like how pods HPA works, likewise with in the min & max values of the EKS Cluster Nodepool, the number of nodes would upsized & downsize automatically.
   2. what will happen if the pod that you are trying to scale is a big pod & curremt pod cannot accomodate? (pod goes to pending state & that craetes an event to add one more node in the cluster node pool) 
 
+> Whenever pods go for unschedule state, autoscalar should create another node
+> We need to deploy auto-scalar & for this auto-scalar we need to attach the IAM Roles (OIDC)
+
+######  Scheduling 
+Scheduling would be done by Scheduler on the control plane of kubernetes
+Scheduler by default Schedules the pods on the nodes as per availability.
+
+What if you dont want pods to be Scheduled on a specific set of nodes.
+What if I want my pods of deployment x & y should be deployed on the same node.
+What if my pods of deploymemt x & y should never ever to be deployed on the same node.
+What if I want my pods should be deployed on the noedes at a balanced aspect per zone to keep high-availability.
+What if you've pods of important applications vs pods of low priority applications & would like to make sure, pods of high-priority should be taken into consideration first.
+What if low priority pods are already running & if you schedule high priority jobs & if resources are not available to accomodate high priority pods, low priority should be evicted from the node? Pod priority & Pre-emption cmes up.
+
+
 
 ## VPA: Vertical   Pod Autoscaling ("scaling up"): (Adding resources to the same instance)
 VPA ex - updating instance from t3.micro  to t3.medium invloves downtime 
@@ -612,3 +627,42 @@ $ kubectl get nodes
   1. api-server, scheduler, controller logs can be shipped to a service in AWS called as CLoudWatch.
   2. By default you dont see them enabled, you need to explicitly enable it.
   3. Once you enable it, you can view  them on CLoudWatch .
+
+
+Concepts -
+All the below topics are to make sure how & where scheduling should be done by the scheduler
+    1. Taints
+    2. Tolerations
+    3. Node Selectors
+    4. Pod Affinity
+    5. Pod Antifinity
+    6. Topology Constraints
+    7. Pod Priority
+    8. Preemption
+
+Use cases -
+    1. you have 3 types of nodes on the cluster that has SSD Disks, HDD disks, Flash Drives    
+
+
+
+How to see the labels ?
+$ kubectl get nodes -o wide --show-labels
+
+How to label the nodes?
+$ kubectl label nodes ip-172-31-39-2.ec2.internal disktype=ssd
+$ kubectl label nodes ip-172-31-39-2.ec2.internal disktype=flashdrive
+
+Using nodeselector, we can define the where to schedule the pods?
+How can we make sure that pods should not be schduled on the nodes of our choice?
+
+Taints & Tolerations are used in k8s to restrict or allow pods to be scheduled on certain nodes based on labels.
+When you taint(for memorization we call it to paint) the pod, it will restrict the pod to schedule on nodes.
+
+Taints - 
+  Taint is a feature that allows scheduler not to schedule pods on the nodes that has taints.
+  Only the pods that has tolerations to that taint can be allowed to be scheduled on the tainted node.
+
+Taints can be operated in 3 modes:
+  1. NoExecte         : 
+  2. NoSchedule       : pods will only be scheduled on the tainted nodes if the pod has tolerations; if not scheduler wont schedule the pod
+  3. PreferNoSchedule :
