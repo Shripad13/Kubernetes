@@ -1,0 +1,70 @@
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: high
+value: 1000000
+globalDefault: false
+description: "This priority class should be used for High priority service pods only."
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: high-imp
+  labels:            # Lables for the replicaset
+    app: high-imp
+spec:                     # Below of spec is for pods, above the spec is for replicaset
+  replicas: 3
+  selector:
+    matchLabels:      # This defines whatever the pods that have "app:nginx can go & attach to the set of services having the similar label"
+      app: high-imp
+  template:
+    metadata:
+      labels:        # Lables for the pods created by the replicaset
+        app: high-imp
+    spec:
+      priorityClassName: high
+      containers:
+      - name: high-imp
+        image: docker.io/nginx:perl
+#        image: docker.io/nginx:otel # Uncomment this line & comment above line to use otel image & check the deployment        
+        ports:
+        - containerPort: 80
+
+--
+
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: low
+value: 1000000
+globalDefault: false
+description: "This priority class should be used for High priority service pods only."
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: low-imp
+  labels:            # Lables for the replicaset
+    app: low-imp
+spec:                     # Below of spec is for pods, above the spec is for replicaset
+  replicas: 3
+  selector:
+    matchLabels:      # This defines whatever the pods that have "app:nginx can go & attach to the set of services having the similar label"
+      app: low-imp
+  template:
+    metadata:
+      labels:        # Lables for the pods created by the replicaset
+        app: low-imp
+    spec:
+      priorityClassName: low
+      containers:
+      - name: low-imp
+        image: docker.io/nginx:perl
+#        image: docker.io/nginx:otel # Uncomment this line & comment above line to use otel image & check the deployment        
+        ports:
+        - containerPort: 80
+

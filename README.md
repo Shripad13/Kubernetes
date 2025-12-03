@@ -663,6 +663,145 @@ Taints -
   Only the pods that has tolerations to that taint can be allowed to be scheduled on the tainted node.
 
 Taints can be operated in 3 modes:
-  1. NoExecte         : 
+  1. NoExecte         : Pods that do not tolerate the taint are evicted immediately.
   2. NoSchedule       : pods will only be scheduled on the tainted nodes if the pod has tolerations; if not scheduler wont schedule the pod
-  3. PreferNoSchedule :
+  3. PreferNoSchedule : PreferNoSchedule is "preference" or "soft" version of NoSchedule. The control plane will try to avoid placing a pod that does not tolerate the taint on the node, but it is not guranteed. 
+
+
+$ kubectl taint nodes <nodeName> app=expense:NoSchedule  -----> to make a taint to node
+Workloads going to be scheduled on top of this node.
+
+$ kubectl describe node <nodeName>                       ------ > to list the taints
+
+## Can workloads/pods be scheduled on the master node of EKS Cluster or not?
+No, workloads cannot be scheduled because they are managed by AWS and not part of your node pool.
+The control plane (master nodes) in EKS is fully managed by AWS and is not exposed as part of your cluster. You do not have access to these nodes, and they are dedicated to running Kubernetes components like the API server, etcd, and controller manager.
+All your workloads (Pods, Deployments, etc.) run on worker nodes (EC2 instances or Fargate profiles) that you manage or configure.
+
+In openshift, we can scheduled pods on the master node , bcoz you will be the responsible for managing the Master & worker nodes.
+
+# Whenever we are taking maintainance of the custer (Updatign frm one version to other version)
+
+1.29.3 (MajorVersion.MinorVersio.servicePack)
+We can only upgrade from one minor version to other minor version (1.29.3 to 1.30.1 to 1.31.0)
+But we can move from one servicePack to other servicePack without any dependency
+
+In the maintainance window, typically first master will be updated & then worker nodes will be upgraded.
+In the unmanaged/On-Premise k8s cluster, if you wish to do maintainance on the node, then we first mark that node in maintainance using an option called as "cordon". Once you cordon the node, new workloads wont be scheduled on it that turns to NotReady state.
+
+$ kubectl get nodes -o wide 
+$ kubectl cordon node <nodeName>   ----> TO cordon the node
+$ kubectl get nodes -o wide 
+$ kubectl get pods
+
+Taint the nodes at nodepool rather than tainting the nodes at pod
+
+1. First we cordon the nodes (this disabled the scheduled, existing workloads will run as is )
+2. Next is to drain the node, (existing workloads as per graceful internal, they will run & will be evicted & will be scheduled as per the expecatations on the other nodes)
+$ kubectl drain <nodeName> --grace-period=30 
+
+3. Once maintainance is done, then we can uncordon the node.
+$ kubectl uncordon <nodeName>
+
+## how to get rid/remove the taint on nodes? (There is NO untaint command)
+
+$ kubectl taint nodes <nodeName> app-
+
+## Topology Constraints --
+
+EKS Cluster should be fault tolerant means deployments will be done on 3 zones (ex- us-east1a, us-east1b, us-east1c)
+it ensures even distribution of pods across a cluster's topology.
+Always keep odd number zones like 3,5,7...
+
+> you can setup EKS Cluster across Zonal not a regional
+you need to setup 2 EKS cluster on 2 different regions & use Global Load Balancer for balancing the load.
+
+         Global Load Balancer
+Regional LB1              Regional LB2              
+EKS Cluster1               EKS CLuster2
+
+
+> Key Points:
+```
+    1) The maximum difference in number of pods between any two topology domains. The default is 1, and you cannot specify a value of 0.
+    2) The key of a node label. Nodes with this key and identical value are considered to be in the same topology.
+    3) How to handle a pod if it does not satisfy the spread constraint. The default is DoNotSchedule, which tells the scheduler not to schedule the pod. Set to ScheduleAnyway to still schedule the pod, but the scheduler prioritizes honoring the skew to not make the cluster more imbalanced.
+    4) Pods that match this label selector are counted and recognized as a group when spreading to satisfy the constraint. Be sure to specify a label selector, otherwise no pods can be matched.
+    5) Be sure that this Pod spec also sets its labels to match this label selector if you want it to be counted properly in the future.
+    6) A list of pod label keys to select which pods to calculate spreading over.
+```    
+
+
+## Pod Priorities -
+Pod priorities in Kubernetes determine the order in which pods are scheduled on nodes when there are competing demands for resources.
+
+1. Node Selector
+Node Selector is the simplest scheduling mechanism. It allows you to specify a key-value pair, and Kubernetes schedules pods only on nodes with matching labels.
+This deployment will schedule pods only on nodes labeled 
+
+2. Node Affinity
+Node Affinity provides advanced scheduling options compared to Node Selector. It allows you to use logical operators like In, NotIn, Exists, and more. You can define both hard and soft constraints.
+Pods will only be scheduled on nodes labeled 
+Pods prefer nodes labeled color=yellow but can still run on other nodes if such nodes are unavailable.
+
+3. Pod Affinity
+Pod Affinity allows you to schedule pods closer to other pods with specific labels, improving inter-pod communication.
+Pods will be scheduled on the same node or close to other pods labeled color=blue.
+
+4. Node Anti-affinity
+Node Anti-affinity ensures that pods do not run on certain nodes.
+Pods will avoid nodes labeled color=yellow.
+
+5. Pod Anti-affinity
+Pod Anti-affinity ensures that pods are not scheduled near other pods with specific labels.
+Pods will avoid being scheduled on the same node as other pods labeled color=green.
+
+
+## Priority Class - 
+kubectl get priorityclass
+
+
+## we can also define the kubelet configuration, to define when to evict the pods.
+
+Sample kubelet config to evict thr pods from nodes if fits a left woth 500Mib memory.
+
+'''
+
+apiVersion: kubelet.config.k8s.io/v1betal
+kind: KubeleteConfiguration
+evictionHard:
+  memory.available: "500Mi"
+  evictionMinimumReclaim:
+    memory.available: "oMi"
+
+'''
+
+
+## Cluster Autoscalar -
+1. Cluster Autoscalar listens to the node stress events & would be autoscale the nodes in the nodepool as per the max cap values.
+2. Cluster Autoscalar is a deployment that has to go to kube-system.
+3. Pods of the Cluster Autoscalar Deployment should have the needed IAM roles attached to launch the new nodes in the Cluster.
+4. We will also learn a concept in IAM called OIDC Provider ( Pods on the k8s )
+
+
+## Integrating the K8s ServiceAccount with IAM role in AWS will give needed power to launch the instnaces.
+
+# Goal: OIDC Integration
+  1. To launch k8s workload with service account 
+  2. Create OIDC provider on cluster
+  3. Create IAM Role that has permissions to launch nodes in eks cluster nodepool.
+  4. Binding of IAM Rle with K8-SA can be achieved by using the OIDC.
+  5. Then that k8 workload will get the needed roles to launch the nodes in the cluster.
+
+
+## alias in .bash_profile ##
+alias gp="git pull"
+alias klf="kubectl logs -f"
+alias kaf="kubectl apply -f"
+alias  kc="kubectl"
+alias kgp="kubectl get pods"
+alias kgn="kubectl get nodes"
+alias kdp="kubectl describe pod"
+alias keit="kubectl exec -it"
+
+> Check the pods status continuously  =====>> kubectl get pods -w      

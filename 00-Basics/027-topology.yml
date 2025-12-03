@@ -1,0 +1,64 @@
+# This maxskew is maintained with 1 as difference between the nodes, if they are not able to accomodate then balance pods won't be scheduled
+
+apiVersion: v1
+kind: Deployment
+metadata:
+  name: topology
+  labels:
+    app: topology
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: topology
+  template:
+    metadata:
+      labels:
+        app: topology
+   spec:
+    topologySpreadConstraints:
+    - maxSkew: 1                     
+      topologyKey: kubernetes.io/zone
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+          app: topology
+    containers:
+      - name: topology
+        image: docker.io/nginx:perl
+        ports:
+          - containerPort: 80
+
+---
+
+# This maxskew is maintained with 1 as difference between the nodes, if they are not able to accomodate then it just schedules as its a soft node.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: topology-scheduleanyway
+  labels:
+    app: topology-scheduleanyway
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: topology-scheduleanyway
+  template:
+    metadata:
+      labels:
+        app: topology-scheduleanyway
+   spec:
+    topologySpreadConstraints:
+    - maxSkew: 1                     
+      topologyKey: kubernetes.io/zone
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+          app: topology-scheduleanyway   
+    containers:
+      - name: topology-scheduleanyway
+        image: docker.io/nginx:perl
+        ports:
+          - containerPort: 80
+

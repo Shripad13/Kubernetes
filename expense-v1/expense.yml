@@ -1,0 +1,33 @@
+# frontend deployment , lb service
+# backend deployment , clusterip service
+# mysql deployment  , clusterip service
+# job to inject the schema
+
+apiVersion: v1
+kind: pod
+metadata:
+  name: frontend
+  labels:
+    tier: frontend
+spec:
+  containers:
+  - name: frontend
+    image: docker.io/sanraman/expense-frontend
+    ports:
+    - containerPort: 80
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-svc
+spec:
+  type: LoadBalancer
+  selector:
+    app: frontend          # This service will forward the requests to pods which have this label
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80           # service listeners on port 80
+      targetPort: 80 
