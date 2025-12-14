@@ -805,3 +805,42 @@ alias kdp="kubectl describe pod"
 alias keit="kubectl exec -it"
 
 > Check the pods status continuously  =====>> kubectl get pods -w      
+
+
+
+
+## ArgoCD - 
+
+1. This is to perform GitOps in k8s cluster.
+2. It has reconissance - Continuously checks the git repo (helm charts on github)for any changes in the manifest files.
+3. Reconcilation - 
+If you made any changes manually on the deployment managed by ArgoCD, ArgoCD controller immediately reverts those changes from the cluster as per the git repo as a source of truth.
+
+           (reconcissance)          (reconcilation)
+GitHub Repo  <----->  ArgoCD Controller  <----->  EKS Cluster
+     (Helm Charts)                        (Watches for changes)      (Deploys the changes)
+
+
+## Why ArgoCD?
+  1. Deployment tool for k8s.
+  2. To have a single pane of glass to manage multiple k8s clusters.
+  3. To have a better visibility on what changes are going to be applied to the cluster from git repo.
+  4. To have better control on who can apply what changes to the cluster from git repo.
+
+## Where are you going to install ArgoCD?
+  1. You can install ArgoCD on any of the k8s cluster that you have access to.
+  2. You can also install ArgoCD on a separate k8s cluster that is dedicated for ArgoCD.
+  3. You can also install ArgoCD on the same k8s cluster where your applications are running.
+
+## What are the specialities of ArgoCD?
+  1. It has a web UI to manage the k8s clusters.
+  2. It has a CLI to manage the k8s clusters.
+  3. It has a REST API to manage the k8s clusters.
+  4. It has a GitOps engine to manage the k8s clusters.
+  
+
+ArgoCd can be on same EKS cluster where your applications are running or it can be on a separate EKS cluster.
+
+Usually ArgoCD is installed on a separate EKS cluster where tools are running like Jenkins, Sonarqube, Nexus etc.
+Applications are running on a separate EKS cluster.
+ArgoCD can manage multiple EKS clusters from a single ArgoCD installation.

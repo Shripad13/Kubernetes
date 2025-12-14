@@ -1,55 +1,54 @@
-module "eks" {
-  source  = "terraform-aws-modules/eks/aws"
-  version = "~> 21.0"
+resource "aws_eks_cluster" "example" {
+  name                      = "b58-eks"
+  role_arn                  = aws_iam_role.example.arn
+  enabled_cluster_log_types = ["audit", "controllerManager"]
+  version                   = "1.30"
 
-  name               = "my-cluster"
-  kubernetes_version = "1.33"
-
-  addons = {
-    coredns                = {}
-    eks-pod-identity-agent = {
-      before_compute = true
-    }
-    kube-proxy             = {}
-    vpc-cni                = {
-      before_compute = true
-    }
+  vpc_config {
+    subnet_ids = ["subnet-0d1a07bc7ceaf4694", "subnet-05a9dc77897b66c38", "subnet-08c53c78664626d0f"] # This is where nodes are going to be provisioned. This is a multi-zonal kubernetes cluster
   }
 
-  # Optional
-  endpoint_public_access = true
-
-  # Optional: Adds the current caller identity as an administrator via cluster access entry
-  enable_cluster_creator_admin_permissions = true
-
-  vpc_id                   = "vpc-1234556abcdef"
-  subnet_ids               = ["subnet-abcde012", "subnet-bcde012a", "subnet-fghi345a"]
-  control_plane_subnet_ids = ["subnet-xyzde987", "subnet-slkjf456", "subnet-qeiru789"]
-
-  # EKS Managed Node Group(s)
-  eks_managed_node_groups = {
-    example = {
-      # Starting on 1.30, AL2023 is the default AMI type for EKS managed node groups
-      ami_type       = "AL2023_x86_64_STANDARD"
-      instance_types = ["m5.xlarge"]
-
-      min_size     = 2
-      max_size     = 10
-      desired_size = 2
-    }
-  }
-
-  tags = {
-    Environment = "dev"
-    Terraform   = "true"
-  }
+  depends_on = [
+    aws_iam_role_policy_attachment.example-AmazonEKSClusterPolicy,
+    aws_iam_role_policy_attachment.example-AmazonEKSVPCResourceController,
+  ]
 }
 
 
-# This enablesthe VPC CNI addon for the EKS cluster
+data "aws_iam_policy_document" "assume_role" {
+  statement {
+    effect = "Allow"
 
-resource "aws_eks_addon" "example" {
-  depends_on = [ "aws_eks_cluster.example" ]
-  cluster_name = aws_eks_cluster.example.name
-  addon_name   = "vpc-cni"
+    principals {
+      type        = "Service"
+      identifiers = ["eks.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
 }
+
+resource "aws_iam_role" "example" {
+  name               = "eks-cluster-example"
+  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+}
+
+resource "aws_iam_role_policy_attachment" "example-AmazonEKSClusterPolicy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+  role       = aws_iam_role.example.name
+}
+
+# Optionally, enable Security Groups for Pods
+# Reference: https://docs.aws.amazon.com/eks/latest/userguide/security-groups-for-pods.html
+resource "aws_iam_role_policy_attachment" "example-AmazonEKSVPCResourceController" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
+  role       = aws_iam_role.example.name
+}
+
+
+# Defines the retention of the enabled logs on cloud watch
+resource "aws_cloudwatch_log_group" "logger" {
+  name              = "/aws/eks/b58-eks/logger"
+  retention_in_days = 1
+}
+

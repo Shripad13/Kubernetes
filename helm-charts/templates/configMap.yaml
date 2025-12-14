@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.appName }}
+  labels: 
+    tier: {{ .Values.appName }}  
+data: 
+  {{-with .Values.env}}
+       {{- toYaml . | nindent 2 }}
+  {{- end }}
+
+---
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-cm
+spec:
+  containers:
+    - name: nginx
+      image: nginx:perl
+      envFrom:
+        - configMapRef:
+            name: nginx-config

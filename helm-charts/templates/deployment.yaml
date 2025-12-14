@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.appName }}
+  labels:            # Lables for the replicaset
+    tier: {{ .Values.appName }}
+spec:                     # Below of spec is for pods, above the spec is for replicaset
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:      # This defines whatever the pods that have "app:nginx can go & attach to the set of services having the similar label"
+      tier: {{ .Values.appName }}
+  template:
+    metadata:
+      labels:        # Lables for the pods created by the replicaset
+        tier: {{ .Values.appName }}
+    spec:
+      containers:
+      - name: {{ .Values.appName }}
+        image: docker.io/sanraman/expense-{{ .Values.appName }}
+        env:
+        - name: DB_HOST
+          value: mysql-svc
+        ports:
+        - containerPort: {{ .Values.port }}

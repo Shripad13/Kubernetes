@@ -1,0 +1,11 @@
+appName: frontend
+port: 80
+
+service:
+  type: LoadBalancer
+  port: 80
+
+replicas: 1
+
+schemaLoader:
+  enabled: false
