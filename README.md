@@ -844,3 +844,40 @@ ArgoCd can be on same EKS cluster where your applications are running or it can 
 Usually ArgoCD is installed on a separate EKS cluster where tools are running like Jenkins, Sonarqube, Nexus etc.
 Applications are running on a separate EKS cluster.
 ArgoCD can manage multiple EKS clusters from a single ArgoCD installation.
+
+
+
+## Problem Statement for Load Balancer Services in K8s -:
+On your k8s cluster, if you have multiple apps that needs to be exposed to the Internet , then using multiple Load Balancers to expose different services, then it becomes difficult to manage them & Costly. 
+
+Solutions- Ingress Controller comes into picture.
+This is a k8s native solution offered from multiple vendors, Using this with a single load Balance we can do routing.
+Using Ingress controller a single load balancer can route traffic from external to internal either by using path-based routing or host-based routing.
+
+
+Internet --> Load Balancer ( Nginx Ingress Controller )  ---> K8s Cluster
+                      |
+          -------------------------
+          |           |           |
+       Service1    Service2    Service3
+        (app1)      (app2)      (app3)
+
+
+## Ingress controller solutions offered by different vendors -
+1. Nginx Ingress Controller (Open Source)
+2. AWS ALB Ingress Controller   
+3. Traefik Ingress Controller
+4. HAProxy Ingress Controller
+5. Istio Ingress Controller        
+
+On AWS, we have 3 types of Load Balancers:
+  1. Application Load Balancer ( ALB )  - Works on Layer 7 (http/ https)
+  2. Network Load Balancer     ( NLB )  - Works on Layer 4 (SMART:routing happens at L3 or Network layer)
+  3. Gateway Load Balancer     ( GLB )  - Works on Layer 3 (IP Layer) (This is also called as API Gateway, mostly used at Network layer)
+  4. Classic Load Balancer     ( CLB )  - Works on Layer 4 & Layer 7 (Legacy & Deprecated)
+
+
+## Install helm chart for nginx ingress controller
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm upgrade -i ngx-ingress ingress-nginx/ingress-nginx -f ingress.yaml
+                (chart name)   (path in the repo)    (values of your choice)
