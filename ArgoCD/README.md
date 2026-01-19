@@ -39,3 +39,21 @@ Namespace - default
 
 Helm -
 VALUES FILES - backend.yaml
+
+
+# How do you integrate ArgoCD for deployment?
+“We integrate Argo CD by installing it in the Kubernetes cluster, connecting it to a Git repository containing manifests or Helm charts, and defining Applications declaratively. CI updates the manifests, and Argo CD automatically syncs the cluster to the desired state using GitOps principles, with auto-sync, self-healing, and rollback capabilities.”
+
+# After pushing image to ECR, how do you configure ArgoCD?
+“After pushing the image to ECR, our CI pipeline updates the image tag in the Git repository (YAML/Helm/Kustomize). Argo CD continuously watches Git and automatically syncs the updated manifests to Kubernetes. EKS nodes pull the image from ECR using IAM roles, ensuring secure and automated deployments.”
+
+Code Commit
+   ↓
+CI Pipeline
+   ├─ Build Docker image
+   ├─ Push image to AWS ECR
+   └─ Update Kubernetes manifests (image tag) in Git
+                    ↓
+              Argo CD detects Git change
+                    ↓
+            Syncs deployment to Kubernetes
