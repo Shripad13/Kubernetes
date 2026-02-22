@@ -39,6 +39,7 @@ To establish communication between Pods in different namespaces, you can use the
 curl http://<pod-name>.<namespace>.svc.cluster.local:<port>
 For example, if you have a Pod named "frontend" in the "dev" namespace and you want to communicate with it from a Pod in the "prod" namespace, you would use:
 curl http://frontend.dev.svc.cluster.local:80
+
 6. How to restrict communication between Pods across different namespaces?
 To restrict communication between Pods across different namespaces in Kubernetes, you can use Network Policies. Network Policies allow you to define rules that control the traffic flow between Pods based on labels and namespaces.
 Here’s a basic example of a Network Policy that restricts traffic to Pods in the "dev" namespace, allowing only Pods from the same namespace to communicate with each other:
@@ -92,3 +93,128 @@ Review the Deployment YAML file to ensure that the replica count is correctly se
 14. Check for Rollout Status:   
 15. Use kubectl rollout status deployment/<deployment-name> to check if the Deployment is in a healthy state.
 By systematically checking these components, you should be able to identify the root cause of why only  3 Pods are running instead of the desired 5 and take appropriate action to resolve the issue.
+
+
+# what node level changes would you do to improve fault tolerance for your pods?
+Should you allow k8s to schedule all pods on the same node by default? No
+We will use Pod Anti-Affinity resource, this will tell k8s to dont schedule this pod on a node, that already has another pod with label app: myapp.
+but it is ignored when the pod is scheduled or starts Running.
+
+# What Is Pod & Node Affinity / Anti-Affinity?
+This tests your scheduling intelligence and how you handle high availability.
+
+* Node Affinity: Controls which specific nodes a pod can run on (e.g., ensuring GPU workloads land on GPU-capable nodes).
+* Pod Anti-Affinity: Used to run pods apart, such as spreading replicas across different availability zones to improve fault tolerance.
+
+# If you update congiuration for pods & not reflecting pod
+1. you can trigger yaml by rolling update
+2. you can delete the pod, new pod will be created with updated configuration.
+
+# Can You Explain the Different Types of Kubernetes Deployments?
+This question tests your understanding of availability, risk, and release strategies. I expect you to know when to use each, not just their definitions.
+
+Recreate: All existing pods are terminated before new ones are created, causing downtime.
+
+Rolling Update (Default): Pods are updated gradually to ensure zero or minimal downtime.
+
+Blue-Green: Two identical environments exist; traffic switches instantly between them for instant rollbacks.
+
+Canary: The new version is released to a small subset of users to monitor performance before a full rollout.
+
+# Ingress Controller -
+Ingress is a Kubernetes API object that defines routing rules for external HTTP/HTTPS traffic.
+
+# How traffic really flows
+Client
+  ↓
+Load Balancer (cloud or bare metal)
+  ↓
+Ingress Controller (NGINX / ALB / Traefik)
+  ↓
+Ingress rules
+  ↓
+Kubernetes Service
+  ↓
+Pods
+
+# Why use Ingress Controller?
+1. Consolidated Routing: Manage all HTTP/HTTPS routing rules in one place.
+2. SSL Termination: Handle SSL/TLS termination at the Ingress level.
+3. Path-Based Routing: Route traffic based on URL paths (e.g., /api → API service, /web → web service).
+4. Host-Based Routing: Route traffic based on hostnames (e.g., api.example.com → API service).
+5. Cost Efficiency: Reduce the number of external load balancers needed.
+
+# When you’d use Ingress vs Service types
+Service (LoadBalancer)
+→ Simple, one service = one IP
+Ingress
+→ Multiple apps, shared domain, path-based routing, TLS, cost-efficient
+
+
+# Kubernetes add-ons
+Kubernetes add-ons are extra components you install on top of a Kubernetes cluster to give it capabilities that aren’t part of the bare-minimum core.
+Kubernetes itself mainly does scheduling and orchestration. Add-ons handle the everything else.
+
+Most add-ons run as pods inside the cluster, usually in the kube-system namespace.
+What add-ons do; They typically provide:
+1. CNI   - → Pod-to-pod networking and network policies
+2. DNS and service discovery - → Lets services find each other using names instead of IPs
+(my-service.default.svc.cluster.local)
+3. Metrics and monitoring -→ required for kubectl top
+4. Logging --→ Centralized logs from all pods and nodes
+5. Ingress / traffic routing -→ HTTP/HTTPS routing into the cluster
+6. Security and policy enforcement
+7. Storage helpers → Connect Kubernetes to cloud disks (EBS, GCE PD, Azure Disk) or on-prem storage
+
+# How add-ons are installed
+Automatically (managed Kubernetes like EKS, GKE, AKS)
+Helm charts
+kubectl apply with YAML
+
+
+# for Database (for StatefulSets) Pod which service you use in Kubernetes ?
+✅ ClusterIP Service
+✅ Often combined with a Headless Service (for StatefulSets)
+❌ Rarely NodePort / LoadBalancer (not recommended for DB exposure)
+
+# 1️⃣ ClusterIP Service
+This is the standard production setup.
+Use this when:
+Your DB is accessed only inside the cluster
+Backend apps connect to it internally
+
+Example: App → postgres-service.default.svc.cluster.local
+
+# 2️⃣ If Using StatefulSet → Headless Service (Very Important)
+
+If your DB runs as a StatefulSet, you should use: clusterIP: None → Headless Service
+It gives each pod a stable DNS identity:
+postgres-0.db-service.default.svc.cluster.local
+postgres-1.db-service.default.svc.cluster.local
+
+This is required for:
+Replication
+Leader election
+Cluster communication
+
+# for Database Pod what will you use in kubernetes VPA or HPA?
+✅ Use VPA (Vertical Pod Autoscaler)
+❌ Avoid HPA (Horizontal Pod Autoscaler) in most cases
+
+Benefits of VPA for DB:
+Adjusts memory as dataset grows - Memory & CPU
+Prevents OOMKills
+Right-sizes CPU for workload
+Maintains single instance stability
+👉 Databases usually need more RAM, not more replicas.
+
+🔹 Why HPA Is Usually Not Good for Databases ? - Scales number of Pods & Works best for stateless apps
+Databases:
+Maintain state
+Require replication setup for scaling
+Can’t just spin up new pods without replication or clustering config
+
+If you scale a DB pod with HPA:
+You may create inconsistent replicas
+Risk split-brain issues
+Risk data corruption (if not architected properly)

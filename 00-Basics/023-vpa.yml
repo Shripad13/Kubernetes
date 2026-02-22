@@ -21,10 +21,10 @@ spec:
         ports:
         - containerPort: 80
         resources:
-          requests:
+          requests:                   # Put Minimum resources required to use
             cpu: "50m"
             memory: "100Mi"
-          limits:
+          limits:                     # Put Maximum resources allowed to use
             cpu: "100m"
             memory: "150Mi"
 

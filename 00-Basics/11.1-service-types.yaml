@@ -1,0 +1,29 @@
+apiversion: v1
+kind: service
+metadata:
+  name: backend-service
+spec:
+  type: ClusterIP
+  selector:
+    app:backend
+  ports:
+    - port: 80
+      targetPort: 8080
+  
+---
+    
+type: NodePort
+ports:
+  - port: 80
+    targetPort: 8080
+    nodePort: 30007
+
+---
+type: Loadbalancer
+ports:
+ - port: 80
+   targetPort: 8080
+
+---
+type: ExternalName
+externalName: api.example.com   

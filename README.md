@@ -22,7 +22,7 @@ High Availability is the main Motto.
 4. Tanzua (Product from VMWare)
 5. Docker Swarm - not even in race of these.
 
-Mostly cloud based companied will use Cloud managed services - EKS, GKE, AKS
+Mostly cloud based companies will use Cloud managed services - EKS, GKE, AKS
 If Servers on-prem then will use Rancher/ Tanzua
 
 Graduated means Product is certified
@@ -53,7 +53,7 @@ Sandbox meas Product which are used for demo/ Experimental purpose.
 4. Ensure Kubelet is installed on all the worker nodes (Kubelet is the local leader for each worker nodes).
 5. Your workloads will be running on the worker nodes.
 
-## Using Managed Servcies from Cloud we can provision a K8s CLuster
+## Using Managed Services from Cloud we can provision a K8s Cluster
 AWS - EKS (Preferred)
 GCP - GKE (Google K8s Engine)
 AZure - AKS (Azure k8s service)
@@ -71,7 +71,7 @@ Always say in interview 2 versions behind, we keep our k8 2 verison behind as pe
 
 Kubectl - k8's client used to connect to k8 cluster which is installed on the computer/server where we are connecting.
 
-Kubelet - this is a local leader of worker node which is going to report node & worker status to the Master node.
+Kubelet - this is a local leader of worker node which is going to report  worker node status to the Master node.
 
 kubeadm - To set up on On-Prem servers.
 
@@ -91,15 +91,101 @@ API server:
 5.Notifies the kubelet on the chosen node to create the pod.
 
 
-> Kube API Server: Central management component; only component that communicates with etcd.
-> etcd databse: Stores all cluster data and configurations.
-> Controller Manager: Ensures the desired state of the cluster is maintained.
-> Scheduler: Assigns Pods to nodes based on resource availability.
-> Worker Nodes: Execute the workloads (Pods) and provide necessary resources.
+1. Kube API Server: Central management component; only component that communicates with etcd.
+2. etcd databse: Stores all cluster data and configurations.
+3. Controller Manager: Ensures the desired state of the cluster is maintained.
+4. Scheduler: Assigns Pods to nodes based on resource availability.
+5. Worker Nodes: Execute the workloads (Pods) and provide necessary resources.
 
 # Worker/ Data Plane Components:
 1. Kubelet            (Runs on each & every node)
 2. Container Runtime  (Docker/Podman)
+
+The Control Plane (The Brain): Includes the kube-apiserver (the entry point), etcd (the key-value store for cluster state), the scheduler (decides pod placement), and the controller manager (reconciles desired vs actual state).
+
+The Worker Plane (The Muscle): Consists of the kubelet (the agent on every node) and kube-proxy (which manages network rules and traffic)
+
+# kubelet - 
+Kubelet is the primary "node agent" that runs on each worker node in a Kubernetes cluster. It is responsible for: 
+
+
+
+# kube-proxy
+ kube-proxy is a network component in Kubernetes that runs on every node in a cluster.
+Its main job is to make Kubernetes Services work by routing traffic to the correct Pods.
+
+** What Problem Does kube-proxy Solve?
+Pods are dynamic and can come and go, and they have their own IP addresses. Services provide a stable endpoint for clients to connect to, but how does traffic get from the Service to the right Pod? kube-proxy handles this routing.
+kube-proxy watches the Kubernetes API for changes to Services and Endpoints, and updates the network rules on each node accordingly. It uses iptables or IPVS to route traffic from the Service IP to the appropriate Pod IPs.
+Pod IPs change when restarted
+Multiple Pods back one Service
+
+Flow :
+Client → Service ClusterIP → kube-proxy → One of the backend Pods
+
+kube-proxy Supports ClusterIP, NodePort, LoadBalancer services.
+
+
+# CoreDNS -
+CoreDNS is the DNS server inside a Kubernetes cluster.
+It allows Pods and Services to discover each other using names instead of IP addresses.
+It is the default DNS server in modern versions of Kubernetes.
+
+CoreDNS translates that name → correct Service IP.
+Pod A → DNS query → CoreDNS → Service IP → kube-proxy → Pod B
+
+> CoreDNS handles name resolution
+> kube-proxy handles traffic routing
+
+Service FQDN format: <service-name>.<namespace>.svc.cluster.local
+
+> Older Kubernetes used: kube-dns
+> Now replaced by: CoreDNS
+
+# CNI (Container Network Interface) in Kubernetes -
+Kubernetes itself does not provide networking; it relies on a CNI plugin to:
+Assign IP addresses to Pods
+Configure routing rules
+Ensure Pod-to-Pod communication
+Connect Pods to the outside world (optional)
+Without CNI, Pods would not be able to talk to each other.
+
+🔹 How CNI Works in Kubernetes
+When a Pod is created:
+kubelet calls the CNI plugin
+CNI plugin:
+Allocates an IP to the Pod
+Configures Linux networking (veth pairs, routes, bridges)
+Connects Pod to cluster network
+Pod gets network connectivity immediately
+The CNI plugin can also handle:
+Network policies (firewalls)
+NAT / routing for external traffic
+Overlay networks (VXLAN, GRE)
+
+🔹 Key Features of CNI
+
+Pod-to-Pod Communication
+All Pods can talk to each other across nodes (flat network)
+
+Pod-to-Service Communication
+Works with kube-proxy / Services
+
+Network Policies
+Can restrict traffic between Pods using CNI-aware policies
+
+Pluggable
+Kubernetes supports any CNI plugin that follows the CNI spec
+
+
+| Term           | Role in Kubernetes                 |
+| -------------- | ---------------------------------- |
+| CNI            | Network interface standard         |
+| Pod IP         | Allocated by CNI plugin            |
+| veth           | Connects Pod to host network       |
+| Network policy | Implemented by CNI plugin          |
+| Plugins        | Calico, Flannel, Cilium, Weave Net |
+
 
 # How can we connect to Kubernetes cluster
 1. kubecl (cli way of accessing the cluster, This is the most preferred way of use)
@@ -145,7 +231,7 @@ POD contains the container.
 
 In Projects, they host 2 Master Nodes, it will help in case of one fails.
 
-A Pod is group of one or more containers with shared Storage & Network resources.  & a specification for how to run the containers.
+A Pod is group of one or more containers with shared Storage & Network resources & a specification for how to run the containers.
 K8's has Shared Network & Shared Storage solved between the pods which resolved critical problems.
 
 K8's runs the applications in the form of pods, pod is nothing but wrapper to the containers, 
@@ -157,7 +243,7 @@ K8's offers lots of varities of resources.
 
 kubectl api-version
 
-## What is the purpose if Pod?
+## What is the purpose of Pod?
 POD is used to run a container, pod is just a wrapper to containers.
 Issue comes up with container not with a Pod.
 Wrapper is a script that invoke other scripts.
@@ -167,7 +253,7 @@ BUt all the containers in the pod will have same Network & same Storage.
 
 
 # Important use case on kubernetes cluster !!!
-On k8. resources can be utilized very efficiently
+On k8s resources can be utilized very efficiently
 
 1. If you have a k8 cluster, this can be logically provisioned in to multiple spaces & can be delegated into multiple teams.
 2. you can host, QA, DEV, SIT enviropnments in a single cluster without having interference to each other.
@@ -177,6 +263,8 @@ This can be achieved by using a namspaces.
 Namespace is a virtual boundary.
 
 Bydefault on k8 cluster, resources in one namespace can communicate with other pods in other namespaces, however we can control the behaviour if we wish to restrict, using a policy called as Network Policy.
+
+A namespace in Kubernetes is a logical partition inside a cluster used to organize and isolate resources (like Pods, Services, and Deployments).
 
 > On k8's cluster , we have these namespaces to host  different resources.
 
@@ -193,7 +281,6 @@ Whenever you have a set of properties or variables that needs to be supplied acr
  $ kubectl api-resources
 
 # How to list the supported api versions in k8?
-
  $ kubectl api-versions
 
 # How to see cluster info ?
@@ -202,7 +289,7 @@ Whenever you have a set of properties or variables that needs to be supplied acr
  $ minikube start --force
 
 # shows logs of container
- $ kubectl logs-f <container>
+ $ kubectl logs -f <container>
 
 # to see logs every 3 sec
 $ kubectl get pods -w or $ kubectl get pods --watch
@@ -218,13 +305,20 @@ $ kubectl apply -f manifest.yml --dry-run=server
 
  $ kubectl apply -f manifest.yml --dry-run=client (this will only be validated by the client not byt the api-server)
 
+# Secrets - Its a k8s built in feature
+We use secrets to store sensitive info such as passwords, OAuth tokens, ssh keys.
+All in base64 encoded format. 
+echo -n "your_pwd" | base64 encrypt
+-- from-literal=username=password
+It will be stored in etcd in base64 encoded format.
+
 
 ########  NAMESPACE ########
 
  ## what is NAMESPACE in k8s & what are its default namespace, where our resources are going to be created bydefault?
 
 > why Namespaces are required?
-Creating a multiple k8 cluster is not a viable option bcoz its a costly thing, so we create a big cluster in that resources created by multiple teams should not be isolated, allof them belong to same project but operated by different teams, easiest way is creates a NAMESPACES & delegate access to each team to access required namspaces.
+Creating a multiple k8 cluster is not a viable option bcoz its a costly thing, so we create a big cluster in that resources created by multiple teams should not be isolated, all of them belong to same project but operated by different teams, easiest way is creates a NAMESPACES & delegate access to each team to access required namspaces.
 Ex- Payment team can use  payment NS, Cart team can use cart NS & so on.
 
 Fundamental concept of the Namespaces is to isolate the resource.
@@ -249,9 +343,9 @@ Depending on the version of k8, you might see the kube-node-lease namaspace.
  $ kubectl get all 
  $ kubectl all -n <kube-system> (for particular namespace)
 
-$ kubectl get all            ----> To see all resources in the default namespace
-$ kubectl get all -n expense ----> To see all resources in the 'expense' namespace 
-$ kubectl get all -A         ----> Shows all resources across all Namespaces
+  $ kubectl get all            ----> To see all resources in the default namespace
+  $ kubectl get all -n expense ----> To see all resources in the 'expense' namespace 
+  $ kubectl get all -A         ----> Shows all resources across all Namespaces
 
 
 ## K8 resources scope can either be nameSpace or Cluster based
@@ -279,7 +373,7 @@ $ kubectl get all -A         ----> Shows all resources across all Namespaces
     5. If you want to support the version update to the pods then we need to use another type of SET called as DEPLOYMENT SET.
 
 How to scale a replicaset manually?
- $ kubectl scake rs rsName --replica=x
+ $ kubectl scale rs rsName --replica=x
 
 ** Lables & Selctors   -
     Lables & Selctors helps in enabling establishment between controller & resources.
@@ -315,7 +409,7 @@ How to scale a replicaset manually?
   2. Recreate 
   3. Blue Green
 
-## STATEFUL set
+3. STATEFUL set
  Stateful set ensure all the created pods will be having a disk attached to it & at the same time this is mostly used to host the DB or Storage based workloads.
  
  Pods created by the stateful set will have a number associated with it.
@@ -325,6 +419,12 @@ How to scale a replicaset manually?
  Even if you scale down a stateful set with 5 pods, the first pod to be deleted is pod-4
  very less no. of times, we would scale down (99 % of the time we would never scale down)                                           
 
+4. DAEMON SET :
+   Daemon Set ensures that a copy of a pod is running on all (or some) nodes in the cluster.
+    This is mostly used for logging or monitoring purpose.
+    Ex- If you want to run a monitoring agent on all the nodes of the cluster, then we use Daemon set.
+    Ex- If you want to run a log collection agent on all the nodes of the cluster, then we use Daemon set.
+    
 
 ### What is CLoud Native K8s means?
   A product that is designed to work on cloud but is also capable to run on-prem but this yields all the promised features with ease when they are on cloud.
@@ -359,12 +459,35 @@ This is as abstract that helps in connecting to pods & this load balances the re
 > Expose an application running in your cluster behind a single outward-facing endpoint, even when the workload is split across multiple backends.
 > In Kubernetes, a Service is a method for exposing a network application that is running as one or more Pods in your cluster.
 
+Exposes a set of Pods as a network service
+Provides a stable IP address and DNS name
+Handles load balancing across Pods
+Decouples clients from changing Pod IPs (since Pods are ephemeral)
+Pods come and go. Services stay.
+
+# Why Services Are Needed
+Without a Service:
+Pods get new IPs when recreated
+Other Pods or external users can’t reliably reach them
+
+With a Service:
+You get a single, consistent access point
+Kubernetes routes traffic to healthy Pods automatically
+
+Service → exposes one application
+Ingress → smart routing (host/path-based) to multiple Services
 
 ## Types of Services in Kubernetes- 
-1. Cluster IP (imp)   - This type of service is only accessible with in the cluster
-2. Load Balancer (imp)- This is to expose something to Internet, typically any service that needs to be exposed to internet.
-3. Node Port     - This is also something to allow access from the internet, but using the node port
-4. External Name (Alias for CNAME)
+1. Cluster IP (imp)   - This type of service is only accessible with in the cluster & Default Service type & Ideal for internal microservices. used for backend communication.
+   
+2. Load Balancer (imp)- This is to expose application to the Internet, typically any service that needs to be exposed to internet. For Prod env
+   
+3. Node Port     - This is also something to allow access from the internet, Expose the Service on each Node’s IP at a static port, For test env - Port range: 30000–32767
+Accessible via: NodeIP:NodePort
+
+4. External Name (Returns a CNAME record) - Map a Service to an external DNS name
+
+5. Headless Service - Directly connect to Pods without load-balancing or a stable IP 
 
 If you dont mention the service type while creating the service, it defaults to clusterip (which is a good option)
 
@@ -373,7 +496,7 @@ kubectl describe svc <svc-name> -- get the Endpoints so that get to know which I
 
 Imp :
     1. When we are trying to connect to any services from any nameSpace, by default the k8 will look for the service the nameSpace from where we are making the call.
-      Ex- nginx-svc is in default nameSpace, exp-pod is in expense nameSpace.
+    Ex- nginx-svc is in default nameSpace, exp-pod is in expense nameSpace.
         Now if you want to make a call from expense-nameSpace to service in other nameSpace you need to call the service by using FQDN.
         
         syntax of FQDN of svc: svcName.nameSpace.svc.cluster.local
@@ -390,7 +513,36 @@ Imp :
 
 
 ## Job Resources in K8s-
-1. You want some task should be executed at some time
+A Job in Kubernetes is a workload resource that:
+👉 Runs one or more Pods to completion
+👉 Ensures a specified number of Pods successfully finish
+👉 Is meant for finite / batch tasks, not long-running apps
+Once the task is done, the Job is considered complete.
+
+
+When to Use a Job (Very Important)
+Use a Job when:
+The task has a start and an end
+You need reliable execution
+You care about successful completion
+
+Examples:
+Database migrations
+Backup script
+Batch processing
+Data import/export
+One-time setup tasks
+❌ Not for web servers or APIs
+✅ Perfect for background & batch work
+
+⚠️ restartPolicy must be Never or OnFailure
+
+
+| Job                   | CronJob            |
+| --------------------- | ------------------ |
+| Runs once             | Runs on a schedule |
+| Manual or event-based | Time-based         |
+| Finite task           | Repeating task     |
 
 
 ## CronJob
@@ -400,7 +552,7 @@ Jobs creates the pod.
 CronJob is meant for performing regular scheduled actions such as backups, report generation, and so on. One CronJob object is like one line of a crontab (cron table) file on a Unix system. It runs a Job periodically on a given schedule, written in Cron format.
 
 
-## We should neither hardcode the credentials on Manifest files nor on Vault, bcoz when if user has access to bash/shell, they still can access the credentials, So in K8s we have Role-Based Access Control (RBAC). 
+> We should neither hardcode the credentials on Manifest files nor on Vault, bcoz when if user has access to bash/shell, they still can access the credentials, So in K8s we have Role-Based Access Control (RBAC). 
 
 
 ## Headless Service in Kubernetes- 
@@ -433,28 +585,41 @@ Request is the mentioned 'x' amount of resource can be used for the container, w
 
 ## Always limits > requests
 
+Limits are maximum amount of resources a container can use.
+Requests are minimum amount of resources a container is guaranteed to have.
 
 # How to check the resource utilization of Pods?
 For this you need to install METRICS_SERVER, then it collects the metrics & shows us.
 
 # How to check the resource utilization of Nodes?
-
+1️⃣ Using kubectl top nodes (Most Common)
+kubectl get pods -n kube-system | grep metrics
 
 Page size in DB - what is the maximum data a process can utilized.
 
 ## Quotas in Kubernetes?
+namespace quotas (officially called ResourceQuotas) are a way to limit how much of a cluster’s resources a specific namespace can use.
 ResourceQuotas work like this:
   1. Defining limits saying that my namespace can have a maximum of 100 pods.
   2. Namespace-x can have a maximum of 16 GB Memory utlization only.
   3. A maximum of 100 secrets can be created in a namespace.
   4. If creating or updating a resource violates a quota constraint, the request will fail with HTTP status code 403 Forbidden. With a message explaining the constraint that would have been violated.
 
+If Quota Is Exceeded? The resource is not created, request is rejected, API server returns an error
+
+Why Use Namespace Quotas?
+✅ Multi-team clusters
+✅ Preventing resource hogging
+✅ Cost control
+✅ Fair resource distribution
+✅ Stability and capacity planning
+
 Quotas majorly comes up in a efficient & a shared cluster where namespaces are extensively used.
 
 When several users or teams share a cluster with a fixed number of nodes, there is a concern that one team could use more than its fair share of resources.
 
 Resource quotas are a tool for administrators to address this concern.
-* When quotas are defined in a namespace, pods/deployments should have limts & requests defined if not, resources wont br created.
+* When quotas are defined in a namespace, pods/deployments should have limts & requests defined if not, resources wont be created.
 
 kubectl get quota
 kubectl get quota -n <namespace>
@@ -468,9 +633,30 @@ How do you know application is healthy or not?
 > For every application there will be a health check endpoints
 > By this command you can get your health check of application running on server "curl localhost/health"
 
+# Types of Probes - 
+1. Liveness Probes - 
+  1. This tells whether the application is alive or not.
+  2. If the application is not alive, then k8s will restart the pod automatically.
+  3. If the application is alive, then nothing happens.
+
+2. Readiness Probes -
+  1. This tells whether the application is ready to serve the traffic or not.
+  2. If the application is not ready, then k8s will stop sending traffic to that pod.
+  3. If the application is ready, then k8s will start sending traffic to that pod.   
 
 
 ### Scaling -
+## HPA: Horizontal Pod Autoscaling ("scaling out")- involves no DOWNTIME.
+  1. This helps in scaling the pods of the deployment automatically based on CPU/Memory/Custom Metric.
+  2. HPA only works when you mention resources requests & limits in manifest file.
+  3. HPA can scale up to max of 10 replicas by default, if you want to scale more than that, you need to change the maxReplicas value in the HPA manifest file.
+  4. You can scale based on CPU/Memory/Custom Metric.
+
+## VPA: Vertical   Pod Autoscaling ("scaling up"): (Adding resources to the same instance)
+  1. This helps in adding resources to the pod by taking down the pod that experiencing resources stress with a new pod with more resources.
+  2. VPA always involves downtime
+  3. VPA is additional feature ,we need to enable vpa-admission-controller on eks cluster.
+  4. Both HPA & VPA CANNOT be used for same deployments.
 
 
 $ kubectl get hpa
@@ -478,7 +664,7 @@ $ kubectl get vpa
 
 ## How EKS Cluster Autoscaling Works?
   1. Just like how pods HPA works, likewise with in the min & max values of the EKS Cluster Nodepool, the number of nodes would upsized & downsize automatically.
-  2. what will happen if the pod that you are trying to scale is a big pod & curremt pod cannot accomodate? (pod goes to pending state & that craetes an event to add one more node in the cluster node pool) 
+  2. what will happen if the pod that you are trying to scale is a big pod & current pod cannot accomodate? (pod goes to pending state & that creates an event to add one more node in the cluster node pool) 
 
 > Whenever pods go for unschedule state, autoscalar should create another node
 > We need to deploy auto-scalar & for this auto-scalar we need to attach the IAM Roles (OIDC)
@@ -490,13 +676,13 @@ Scheduler by default Schedules the pods on the nodes as per availability.
 What if you dont want pods to be Scheduled on a specific set of nodes.
 What if I want my pods of deployment x & y should be deployed on the same node.
 What if my pods of deploymemt x & y should never ever to be deployed on the same node.
-What if I want my pods should be deployed on the noedes at a balanced aspect per zone to keep high-availability.
+What if I want my pods should be deployed on the nodes at a balanced aspect per zone to keep high-availability.
 What if you've pods of important applications vs pods of low priority applications & would like to make sure, pods of high-priority should be taken into consideration first.
-What if low priority pods are already running & if you schedule high priority jobs & if resources are not available to accomodate high priority pods, low priority should be evicted from the node? Pod priority & Pre-emption cmes up.
+What if low priority pods are already running & if you schedule high priority jobs & if resources are not available to accomodate high priority pods, low priority should be evicted from the node? Pod priority & Pre-emption comes up.
 
 
 
-## VPA: Vertical   Pod Autoscaling ("scaling up"): (Adding resources to the same instance)
+## VPA: Vertical Pod Autoscaling ("scaling up"): (Adding resources to the same instance)
 VPA ex - updating instance from t3.micro  to t3.medium invloves downtime 
 In any cloud, scaling a resource vertically always involves DOWNTIME.
 Vertical scaing is always Costly.
@@ -517,6 +703,14 @@ Search on Goggle to perform the installation.
 VPA Operates in 2 modes:
   * Manual Mode -   (Pods will be upsized & downsized automatically: but involves downtime)
   * Atomatic Mode - (When you enable in autoMode, you just get suggestions) 
+
+| Feature     | HPA            | VPA                        |
+| ----------- | -------------- | -------------------------- |
+| Scales      | Pod count      | Pod size                   |
+| Reacts to   | Traffic load   | Resource usage             |
+| Pod restart | ❌ No           | ✅ Yes (Auto mode)       |
+| Best for    | Stateless apps | Right-sizing workloads     |
+| Cost impact | Handles spikes | Prevents over-provisioning |
 
 
 Both HPA & VPA CANNOT be used for same deployments.
@@ -586,7 +780,7 @@ $ kubectl get roles
 $ kubectl get roles -A      ----> It searches in all NameSpaces of EKS cluster
 
 ## What are the default roles that are available in the cluster?
-Points to be noeted:
+Points to be noted:
   1. Just like on linux how you create users & delegate permissions to them either directly or by groups, we can also do the same thing on k8s using k8s users & groups.
   2. you can create your roles, perform binding (adding user to the role)
 
@@ -600,20 +794,20 @@ These accounts are used by applications to authenticate to the cluster and are d
 By assigning a service account to a pod, you can control what permissions that pod has within the cluster, which is managed using Role-Based Access Control (RBAC).     
 
 # Service Account (sa):
-Just like how we ise IAM role to gain access to a non-human resource on AWS, similarly we use Service Account on k8s to let needed roles aligned to k8 workloads.
+Just like how we use IAM role to gain access to a non-human resource on AWS, similarly we use Service Account on k8s to let needed roles aligned to k8 workloads.
 
-$ kubectl get sa
-$ kubectl describe sa  default
+  $ kubectl get sa
+  $ kubectl describe sa  default
 
 Each & every sa will have token, if that is not available we can generate a token & associate.
 
-$ kubectl create token sample            (Creates a token for ServiceAccount "sample")
+ $ kubectl create token sample            (Creates a token for ServiceAccount "sample")
 
 Using the above token , we will connect to the cluster (lets create a user account on your linux machine)
 We are using a token generated on the system & using this we are attempting to connect to the cluster
 
 ```
-$ kubectl get nodes
+ $ kubectl get nodes
   Error from server (Forbidden)
 ```
 
@@ -631,11 +825,11 @@ $ kubectl get nodes
 
 Concepts -
 All the below topics are to make sure how & where scheduling should be done by the scheduler
-    1. Taints
+    1. Taints - it will restrict the pod to schedule on nodes.
     2. Tolerations
-    3. Node Selectors
-    4. Pod Affinity
-    5. Pod Antifinity
+    3. Node Selectors - we can define the where to schedule the pods
+    4. Pod Affinity - 
+    5. Pod Antifinity - for Fault tolerance
     6. Topology Constraints
     7. Pod Priority
     8. Preemption
@@ -646,11 +840,11 @@ Use cases -
 
 
 How to see the labels ?
-$ kubectl get nodes -o wide --show-labels
+ $ kubectl get nodes -o wide --show-labels
 
 How to label the nodes?
-$ kubectl label nodes ip-172-31-39-2.ec2.internal disktype=ssd
-$ kubectl label nodes ip-172-31-39-2.ec2.internal disktype=flashdrive
+ $ kubectl label nodes ip-172-31-39-2.ec2.internal disktype=ssd
+ $ kubectl label nodes ip-172-31-39-2.ec2.internal disktype=flashdrive
 
 Using nodeselector, we can define the where to schedule the pods?
 How can we make sure that pods should not be schduled on the nodes of our choice?
@@ -668,10 +862,10 @@ Taints can be operated in 3 modes:
   3. PreferNoSchedule : PreferNoSchedule is "preference" or "soft" version of NoSchedule. The control plane will try to avoid placing a pod that does not tolerate the taint on the node, but it is not guranteed. 
 
 
-$ kubectl taint nodes <nodeName> app=expense:NoSchedule  -----> to make a taint to node
+ $ kubectl taint nodes <nodeName> app=expense:NoSchedule  -----> to make a taint to node
 Workloads going to be scheduled on top of this node.
 
-$ kubectl describe node <nodeName>                       ------ > to list the taints
+ $ kubectl describe node <nodeName>                       ------ > to list the taints
 
 ## Can workloads/pods be scheduled on the master node of EKS Cluster or not?
 No, workloads cannot be scheduled because they are managed by AWS and not part of your node pool.
@@ -680,7 +874,7 @@ All your workloads (Pods, Deployments, etc.) run on worker nodes (EC2 instances 
 
 In openshift, we can scheduled pods on the master node , bcoz you will be the responsible for managing the Master & worker nodes.
 
-# Whenever we are taking maintainance of the custer (Updatign frm one version to other version)
+# Whenever we are taking maintainance of the cluster (Updating from one version to other version)
 
 1.29.3 (MajorVersion.MinorVersio.servicePack)
 We can only upgrade from one minor version to other minor version (1.29.3 to 1.30.1 to 1.31.0)
@@ -705,7 +899,7 @@ $ kubectl uncordon <nodeName>
 
 ## how to get rid/remove the taint on nodes? (There is NO untaint command)
 
-$ kubectl taint nodes <nodeName> app-
+ $ kubectl taint nodes <nodeName> app-
 
 ## Topology Constraints --
 
@@ -756,6 +950,11 @@ Pods will avoid nodes labeled color=yellow.
 Pod Anti-affinity ensures that pods are not scheduled near other pods with specific labels.
 Pods will avoid being scheduled on the same node as other pods labeled color=green.
 
+# Preemption -
+Preemption in Kubernetes is a scheduler feature that helps make sure high-priority pods can run even when the cluster is full.
+Kubernetes can kick out (evict) lower-priority pods to make room for more important ones.
+This only happens at scheduling time, not randomly later.
+
 
 ## Priority Class - 
 kubectl get priorityclass
@@ -790,7 +989,7 @@ evictionHard:
   1. To launch k8s workload with service account 
   2. Create OIDC provider on cluster
   3. Create IAM Role that has permissions to launch nodes in eks cluster nodepool.
-  4. Binding of IAM Rle with K8-SA can be achieved by using the OIDC.
+  4. Binding of IAM Role with K8-SA can be achieved by using the OIDC.
   5. Then that k8 workload will get the needed roles to launch the nodes in the cluster.
 
 
@@ -850,7 +1049,7 @@ ArgoCD can manage multiple EKS clusters from a single ArgoCD installation.
 ## Problem Statement for Load Balancer Services in K8s -:
 On your k8s cluster, if you have multiple apps that needs to be exposed to the Internet , then using multiple Load Balancers to expose different services, then it becomes difficult to manage them & Costly. 
 
-Solutions- Ingress Controller comes into picture.
+* Solutions- Ingress Controller comes into picture.
 This is a k8s native solution offered from multiple vendors, Using this with a single load Balance we can do routing.
 Using Ingress controller a single load balancer can route traffic from external to internal either by using path-based routing or host-based routing.
 
@@ -881,3 +1080,63 @@ On AWS, we have 3 types of Load Balancers:
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm upgrade -i ngx-ingress ingress-nginx/ingress-nginx -f ingress.yaml
                 (chart name)   (path in the repo)    (values of your choice)
+
+
+# ReplicaSet Vs Statefulset
+If your app doesn’t care which pod handles the request → ReplicaSet (Deployment)
+If your app cares about identity, order, or disk → StatefulSet                
+
+1. ReplicaSet (Stateless workloads)
+A ReplicaSet ensures that a specified number of identical pods are running at all times.
+Pod names are random - (app-7f9c6b4d8-xk2lm)
+Pods can be killed and recreated anywhere
+No guaranteed storage or identity
+* Best use cases :
+Web servers
+APIs
+Microservices
+Background workers
+
+2. StatefulSet (Stateful workloads)
+A StatefulSet is designed for applications that need stable identity and persistent storage.
+Pods have stable, predictable names - (db-0, db-1, db-2)
+Each pod gets its own Persistent Volume (PV)
+Pods are created, deleted, and scaled in order
+Pod identity sticks even after restart
+* Best use cases:
+Databases (MySQL, PostgreSQL)
+Distributed systems (Kafka, Zookeeper)
+Stateful apps that rely on hostname or disk
+
+# Deployment Vs Statefulset
+Deployment is used for stateless applications where pods are interchangeable
+StatefulSet is used for stateful applications that require stable identity, ordered deployment, and persistent storage.
+
+🔹 1. Deployment
+👉 Best for: Stateless applications
+Examples:Web servers (NGINX, Apache), REST APIs, Frontend apps, Microservices
+Pod Naming Example:
+nginx-deployment-7f5d8c9d6b-abc12
+nginx-deployment-7f5d8c9d6b-xyz34
+If a pod dies:
+Kubernetes creates a new one
+It does not care which specific pod it replaces
+
+🔹 2. StatefulSet
+👉 Best for: Stateful applications
+Examples: Databases (MySQL, PostgreSQL, MongoDB), Kafka, Elasticsearch, Redis cluster, Any app needing stable identity
+Pod Naming Example: mysql-0, mysql-1 , mysql-2
+If mysql-1 dies:
+Kubernetes recreates mysql-1
+
+| Feature            | Deployment       | StatefulSet            |
+| ------------------ | ---------------- | ---------------------- |
+| Use case           | Stateless apps   | Stateful apps          |
+| Pod identity       | Random           | Stable & predictable   |
+| Pod naming         | Auto-generated   | Ordered (app-0, app-1) |
+| Storage            | Shared/ephemeral | Dedicated per pod      |
+| Scaling            | Parallel         | Ordered                |
+| Pod startup order  | No guarantee     | Ordered (0 → N)        |
+| Pod deletion order | Random           | Reverse order          |
+| Network identity   | Not stable       | Stable DNS per pod     |
+| Typical use case   | Web/API          | Databases              |

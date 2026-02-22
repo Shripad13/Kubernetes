@@ -15,7 +15,6 @@ spec:
     metadata:
       labels:
         app: taints
-   spec:
     containers:
       - name: taints
         image: docker.io/nginx:perl
@@ -45,7 +44,6 @@ spec:
     metadata:
       labels:
         app: tolerate
-   spec:
     containers:
       - name: tolerate
         image: docker.io/nginx:perl

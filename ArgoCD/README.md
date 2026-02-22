@@ -1,4 +1,4 @@
-# Foe executing the argo.yaml - 
+# For executing the argo.yaml - 
 1. Create a namespace for argo-cd
    $ kubectl create namespace argocd
 2. Apply the argo.yaml file
