@@ -57,3 +57,18 @@ CI Pipeline
               Argo CD detects Git change
                     ↓
             Syncs deployment to Kubernetes
+
+
+# How traditional CICD is differs from GitOps CICD?
+# Reconcilation in GitOps CICD?
+# How do you optimize the CICD pipeline for faster deployments & areas to identify?
+Build - Use caching, parallel builds, and incremental builds to speed up the process.
+Test - Run tests in parallel, use test impact analysis to run only relevant tests, and consider using faster test frameworks or mocking external dependencies.
+Deployment - Use canary or blue-green deployments to minimize downtime, and automate rollbacks for quick recovery.
+Security Scan - Integrate security scanning early in the pipeline, but optimize by running only critical scans on every commit and more comprehensive scans on scheduled runs or before production deployments.
+Maven Cache - Use a shared Maven cache to speed up dependency resolution across builds.
+Artifact Repository - Use a local artifact repository to speed up artifact retrieval.
+Docker Layer Caching - Use Docker layer caching to speed up image builds.
+Docker Image Size - Optimize Docker images to reduce build and deployment time. Multistage builds, minimal base images, and removing unnecessary files can help reduce image size and speed up deployments.
+Network latency - Optimize network latency by using regional resources and minimizing data transfer between stages.
+Overall, focus on parallelization, caching, and automation to optimize the CI/CD pipeline for faster deployments while maintaining quality and security.

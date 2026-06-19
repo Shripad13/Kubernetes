@@ -1,3 +1,31 @@
+
+# Stop Trying to Memorize YAML -
+https://aws.plainenglish.io/stop-trying-to-memorize-yaml-use-this-devops-workflow-instead-c30a9165c9e6
+
+1. Validate before you apply anything:  kubectl apply --dry-run=client -f deployment.yaml
+2. Inspect any resource schema without leaving your terminal:
+   kubectl explain deployment.spec.template.spec.containers
+3. Generate a base manifest from scratch using kubectl itself:
+   kubectl create deployment my-app --image=nginx --dry-run=client -o yaml
+
+The Complete Workflow in Under 2 Minutes
+Need a new Kubernetes manifest? Here’s the whole process, start to finish.
+
+# Step 1 — Let kubectl generate the base YAML for you
+kubectl create deployment my-app --image=nginx --dry-run=client -o yaml > deployment.yaml
+
+# Step 2 — Open the file and modify only what you need
+# (image name, resource limits, replica count, labels)
+
+# Step 3 — Check any field you're unsure about, right in the terminal
+kubectl explain deployment.spec.template.spec.containers
+
+# Step 4 — Validate before it touches anything
+kubectl apply --dry-run=client -f deployment.yaml
+
+# Step 5 — Apply
+kubectl apply -f deployment.yaml
+
 # Kubernetes
 
 WE ARE NOT IN INTERST OF ENGINEERING THE K8S,  WE ARE IN INTEREST OF ENGINEERING THE APPLICATION.
