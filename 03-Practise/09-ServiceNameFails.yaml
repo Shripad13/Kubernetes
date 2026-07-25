@@ -1,0 +1,41 @@
+# Your service exists and has correct endpoints, but traffic fails only when using the Service name
+(wroks cia PodIP).
+# Lets see how we find the root cause.
+
+1. Confirm Service and Endpoints
+ $ kubctl get svc my-app
+
+ $ kubectl get endpoints my-app
+
+ Service & endpits exist - the Service should be able to route traffic to Pods.
+
+2. Verify direct Pos connectivity (control test) 
+ $ kubectl exec -it test-pod -- curl -sS 10.0.0.1:80
+ Pod IP responds - application & Pod networking are fine.
+ Problem is likely with servicename resolution or kube-proxy rules.
+
+3. Check Service name DNS resoltion.
+
+ $kubectl exec it test-pod -- nslookup my-app
+
+ DNS lookup for the service name fail.
+ This indicates a cluster DNS problem (CoreDNS) rather than application or Service endpoints.
+
+4. Inspect CoreDNS pod & logs
+ $ kubectl get pods -n kube-system -l k8s-app=kube-dns
+ 
+ $ kubectl logs -n kube-system coredns-6dsbkjo3llls-abc12
+
+ CoreDNS is failing (CrashLoopBackOff errors) - confirmed root cause for Service-name failures.
+
+5. Fix COreDNS & verify resolution
+Restarting the CoreDNS restored DNS resolution; service name resolves and Service traffic succeeds, 
+Root cause was a failing CoreDNS instance.
+
+ $ kubectl rollout restart deployment coredns -n kube-system
+
+ $ kubectl get pods -n kube-system -l k8s-app=kube-dns
+
+ $ kubectl exec -it test-pod -- nslookup my-app
+
+ $ kubectl exec -it test-pod -- curl -sS my-app

@@ -1,0 +1,20 @@
+# RUn DB cleanup job in only stgaing environment with preschduled time
+
+# create a cron job k8 resource & deploy only in stage env
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: db-cleanup
+  namespace: staging
+spec: 
+  schedule: "0 2 * * *"   # every night at 2 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: cleanup
+              iamge: myapp-db-cleaner:latest
+              args: ["cleanup" "staging"]
+          restartPolicy: OnFailure

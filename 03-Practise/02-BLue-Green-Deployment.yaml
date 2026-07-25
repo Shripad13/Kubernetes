@@ -1,0 +1,6 @@
+# Increase capacity to 5 replicas & roll out a green version using a Blue-Green deployment dtrategy to ensure 0 downtime.
+# You have a blue deployment YAML & apply green deployment but not receving traffic
+# BLue is serving Traffic-->  Green is running but not receiving traffic yet
+# Users doesnt see changes until you apply SERVICE YAML file
+
+# You can Switch the Traffic

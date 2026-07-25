@@ -1,0 +1,24 @@
+# Your Headless service returns no DNS records even though Pods are running
+How will you troubleshoot this?
+
+1. Verify Headless Service Configuration
+ $kubectl get svc my-headless
+
+ Verify TYPE as CLUSTERIP & confirms it is a headless service
+ DNS should return Pod IP's if endpoints exist.
+
+2. Check DNS resolution
+ $ kubectl exec -it test-pod -- nslookup my-headless
+
+ NO DNS records returned - indicates k8s DNS has np endpoints to publish.
+
+3. Check Endpoints
+ $ kubectl get endpoints my-headless
+  No endpoints found even though Pods are running = this is why DNS returns nothing
+
+4. Identify Selector Mismatch in Service YAML & POD YAML
+
+Selector from service yaml & lables in Pod YAML should match , so endpoints are not created.
+
+5. Fix Selector & Verify the DNS resolution 
+$ kubectl exec -it test-pod -- nslookup my-headless

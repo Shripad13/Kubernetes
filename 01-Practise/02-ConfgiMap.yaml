@@ -1,0 +1,17 @@
+# Node.js app requires environment variables 
+# stored in aconfigMap name node-env-config.
+# How will you injwct these variables into your pod?
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: node-app-pod
+  labels:
+   app: node-app
+spec:
+  containers:
+    - name: app
+      image: node:18
+      envFrom: 
+        - configMapRef:
+            name: node-env-config

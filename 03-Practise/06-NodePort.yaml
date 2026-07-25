@@ -1,0 +1,32 @@
+# NodePort service works on one node but fails on the others node
+
+#Step1 - Check service Details
+ $ kubectl get svc <svc-name> -o wide
+
+ Since NodePort runs on every node, all nodes should respond on the port regardless of pod replacement.
+
+# Step2 - Check endpoints
+ $ kubectl get endpoints <svc-name>
+
+ Endpoints exist, so pods backing the service are healthy & reachable internally.
+ This confirms the issue is not with the service selector or unavailable pods.
+
+# step3 - Test the nodes
+ $ kubectl get pods -l app=my-app -o wide
+
+
+ $ curl -sS http://10.0.1.11:30080
+
+# step5 - CHeck the host firewall on the failing node (on node1)
+  $ sudo ufw status
+Nodes firewall explicitly denies the traffic to the NodePort on node1
+
+# Step6 - Fix the firewall rule
+ $ sudo ufw allow 30080/tcp
+  $ sudo ufw status
+
+  Opening the NodePort in the Node's firewall restores traffic flow.
+
+# step 8 - Retest / Verify
+On node 1
+ $ curl -sS http://10.0.1.11:30080

@@ -1,0 +1,8 @@
+# When you did changes on secrets but Pod Does Not reflect with New Changes
+# Solution: command
+
+# Restarts all pods in the specified deployment by triggereing a rolling update
+ "$ kubectl rollout restart deployment <deployment-name>"
+
+# Delete the pod, so it can comeback again
+  "$ kubectl delete pod <pod-name>"

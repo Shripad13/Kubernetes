@@ -289,3 +289,32 @@ Optimize workloads
 Enable autoscaling
 Review resource requests
 
+# In Amazon EKS (or any Kubernetes cluster), the behavior depends on why that one pod did not update during the rolling update.
+
+Normal Rolling Update Behavior
+
+Suppose:
+
+Deployment replicas = 3
+Current version = v1
+New version = v2
+Rolling update starts
+2 pods successfully update to v2
+1 pod remains on v1
+
+✅ Final Answer
+👉 If 1 pod fails to update:
+It will stay running with the old version (to maintain availability)
+If it gets recreated later → it will try to run the new version
+It won’t permanently come up with the old version, unless you rollback
+
+
+Situation	                                 Outcome
+New pod fails readiness	            Old pod stays (previous version)
+Old pod gets deleted after update  	Comes up with new version
+Rollout fails	                      Mixed versions until fixed/rollback
+Rollback triggered	                All pods revert to old version
+
+
+# sidecar containers -
+The appln produces logs and we want to send those logs to an external system in real time without changing the appln itself.

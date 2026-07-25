@@ -1,0 +1,25 @@
+# How would you Mount a JSON Config File to the containers?
+
+Option 1. Create a configMap from the JSON file
+kubectl create confgiMap app-config \
+-- from-file=seting.json
+
+This creates a ConfigMap name app-config with settings.json as a key
+
+Option 2. Mount the ConfigMap as a volume in your Deployment
+ 
+
+volumeMounts:
+  - name: config-volume
+    mountPath: /app/config
+    readOnly: true
+
+# volumeMounts section mounts the config-volume (from a configMap) into the container
+# at /app/config in read-only mode
+
+# The volume_section defines config-volume and links it to the app-config ConfigMap.
+# making its key-value pairs available as files.
+volumes:
+  - name: config-volume
+    configMap:
+      name: app-config

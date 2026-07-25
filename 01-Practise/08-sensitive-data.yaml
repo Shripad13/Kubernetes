@@ -1,0 +1,14 @@
+# Do not Store Sensistive Data
+# Kubernetes has built in feature as "secrets" 
+# we can store DB pwds, API Key, access tokens
+
+ $ kubectl create secret generic db-secret \
+  --from-literal=username=admin \
+  --from-literal=password=pa$$w0rd
+secret/db-secret created
+
+
+# when you use "literal" , k8s auomatically converts and stores in encode into base64
+
+# You can get the YAML file with encoded pwd with below command
+ # $ kubectl get secret db-secret -o yaml 

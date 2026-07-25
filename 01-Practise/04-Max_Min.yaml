@@ -1,0 +1,34 @@
+# your application need to run with guranteed
+# minimum 250m CPU and 256Mi but not
+# Exceed Limit of 500m CPU & 512Mi memory
+
+apiVersion: v1
+kind: Pod
+metadata: 
+ name: app-with-resources
+ labels:
+   app: resource-demo
+
+spec: 
+  containers:
+    - name: app
+      image: node:18
+      resources: 
+        requests:
+          cpu: "250m"
+          memory: "256Mi"
+        limits:
+          cpu: "500m"
+          memory: "512Mi"
+      ports:
+        - containerPort: 3000
+        
+
+# 250m : milli cores means 0.25 CPU core
+# m stands for  millicpu - (milli = 1/1000 )      
+
+# Mi : Mebibytes
+# 1Mi = 1024 x 1024 bytes (1,048,576 bytes)
+# 👉 256Mi = Equals 256 MiB (~268 MB)
+
+# 👉 512Mi = Equals 512 MiB (~536 MB)

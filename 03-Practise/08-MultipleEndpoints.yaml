@@ -1,0 +1,41 @@
+# Your Servie shows multiple endpoints but traffic consistently reaches only pods on a single node.
+What node level issues could cause this imbalance?
+
+1. Check Service Details
+ $ kubectl get svc external-nodeport - o wide
+Check Service TYPE & Exposed Port
+The service lists multiple endpoints, so k8s knows about all Pods, The imbalance is likely due to
+node-level traffic routing.
+
+2. Verify Pod Node Distribution
+ $ kubectl get pods -o wide -l app=my-app
+
+Pods are spread across nodes. All nodes should receive traffic.
+
+3. Check kube-proxy status
+ $ kubectl get pods -n kube-system -lk8s-app=kube-proxy -o wide
+
+ kube-proxy is not running on node2, causing traffic to only reach Pods on node1
+
+4. Inspect kube-proxy Logs
+ $ kubectl logs kube-proxy-2 n kube-system
+
+  Logs indicate kube-proxy cannot set iptables rules
+  which blocks service traffic on node2?
+
+5. Fix kube-proxy on the node
+ $ kubectl delete pod kube-proxy-2 -n kube-system
+
+ $ kubectl get pods -n kube-sytem -l k8s-app=kube-proxy -o wide
+
+ Deleting the pod allows it to restart .
+ kube-proxy now runs on node2, enabling proper routing
+
+ kube-proxy runs as DaemonSet, so k8s automatically recreates it on the node.
+
+6. Verify Service Traffic Balancing
+ $ kubectl exec -it test-pod -- curl -s http://my-service
+
+ Traffic now reaches Pods on multiple nodes, confirming kube-proxy failure was the root-cause.
+ 
+  

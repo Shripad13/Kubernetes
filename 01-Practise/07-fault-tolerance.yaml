@@ -1,0 +1,31 @@
+# Should you schedule a all k8s pods on same node?
+# No, thats not a fault tolerance
+# Pod-affinity
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: node-app-pod
+  labels:
+    app: node-app
+    env: prod
+spec:
+  containers:
+    - name: app
+      image: node:18
+      Ports: 
+       - containerPort: 3000
+  affinity:
+    podAntiAffinity: # Dont schdule the pod
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - node-app
+          topologyKey: "kubernetes.io/hostname"
+
+
+# dont schedule the pod on node only at the time of scheduling
+# But it is ignored when the pod is schduled or starts running

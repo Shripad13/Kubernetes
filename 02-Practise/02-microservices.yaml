@@ -1,0 +1,28 @@
+# How do you create a microservices yaml for dev & prod without duplicating the deployment YAML?
+# different config for dev & prod ; example log_level & DB_URL
+
+# First We can use HELM template- values.yaml file with environment-specific keys
+
+
+dev: 
+  config:
+    LOG_LEVEL: debug
+    DB_URL: dev-db-url
+prod: 
+  config:
+    LOG_LEVEL: debug
+    DB_URL: prod-db-url
+
+# Second - Helm variable in your deployment.yaml
+
+env:
+  -name: LOG_LEVEL
+   value: "{{ .Values.env.config.LOG_LEVEL}}"
+  -name: DB_URL
+   value: "{{ .Values.env.config.DB_URL}}"   
+
+# Step3- Set the Env variable during deployment
+
+helm upgrade --install myapp ./helm-chart \
+  --namespace my-namespace \
+  --set env=$ENVIRONMETN

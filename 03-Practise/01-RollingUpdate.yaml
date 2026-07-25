@@ -1,0 +1,72 @@
+# Deploy a new version with zero downtime while ensuring any issue allows an instant rollback
+
+#step1: RollingUpdate
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 0
+    maxSurge: 1
+
+# step2 - readinessProbe
+containers:
+  - name: app
+    image: my-registry/my-app:2.0
+    imagePullPolicy: IfNotPresent
+    ports:
+      - containerPort: 8080
+    readinessProbe:        # Pod doesnt receive traffic until app is full ready
+      httpGet:
+        path: /health
+        port: 8080
+      initialDelaySeconds: 5
+      periodSeconds: 5
+      failureThreshold: 3
+    livenessProbe:
+      httpGet:
+        path: /live
+        port: 8080
+      initialDelaySeconds: 30
+      periodSeconds: 10
+    lifecycle:
+      preStop:
+        exec:
+          command: ["/bin/sh", "-c", "sleep 10"]
+
+
+
+#step3: terminationGracePeriodSeconds+lifecycle.preStop
+# It Gives in-flight request time to finish before container exit.
+spec: 
+  terminationGracePeriodSeconds: 30 
+
+lifecycle:
+  preStop: 
+    exec: 
+      command: ["/bin/sh", "-c", "sleep 10"]
+
+
+
+# step4: PodDisruptionBudget
+#prevents voluntary disruption from dropping too many pods
+
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  - name: my-app-db
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: mya-app
+
+#step5 : revisionHistorylimit
+# quickly rollback if something goes wrong
+spec: 
+  replicas: 3
+  revisionHistorylimit: 10
+
+
+# Step6: Rollback Command
+
+ $ kubectl rollout undo deployment/my-app

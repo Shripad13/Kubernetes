@@ -1,0 +1,21 @@
+# Monitoring team reports that production dashboards are not
+# showing any traffic or metrics for nginx-based web servers
+# But the application team insists everything is running fine
+# what would you do a a DevOps engineer in this scenario?
+
+# soln - Add labels with app & env
+
+apiVersion: v1
+kind: Pod
+metadata:
+ name: nginx-test
+ labels:
+  app: nginx    # Identifies the app
+  env: prod     # Specifies the env
+
+spec: 
+ containers:
+   - name:
+     image:
+     Ports:
+       - containerPort:  

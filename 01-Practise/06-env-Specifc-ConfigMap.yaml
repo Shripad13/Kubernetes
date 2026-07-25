@@ -1,0 +1,28 @@
+# We maintain 2 differnet configmap-prod.yaml & configmap-dev.yaml as environment specific
+
+#configmap-prod.yaml
+apiVersion: v1
+kind: configMap
+metadata:
+  name: app-config
+data:
+  APP_URL: "https:prod.example.internal"
+  DB_HOST: "prod-db.internal"
+  APP_MODE: "prod"
+  LOG_LEVEL: "info"
+
+---
+#configmap-dev.yaml
+apiVersion: v1
+kind: configMap
+metadata:
+  name: app-config
+data:
+  APP_URL: "https:dev.example.internal"
+  DB_HOST: "dev-db.internal"
+  APP_MODE: "dev"
+  LOG_LEVEL: "debug"
+ 
+# First apply COnfigMap YAML then Deployment YAML file
+# kubectl apply -f k8s/configmap-${ENV}.yaml (apply the env specific configMap)
+# kubectl apply -f k8s/deployment.yaml (Apply the (shared) deployment YAML)

@@ -1,0 +1,16 @@
+# ClusterIp service resolves in DNS but requests fail with "connection refused"
+
+#Step1-  check service with 
+ $ kubectl get svc <svc name>
+
+# Step2 - check endpoints
+ $ kubectl get endpoints <svc name>
+ 
+#  Step3- Check Service Port Vs Pod port
+ $ kubectl describe svc <svc name> |grep -i "Port"
+ you can see Service port & Pod port forwards to which port
+
+ $ kubectl describe pod <pod name> |grep -i "port"
+
+ Traffic hits an unbound port ---> "connection refused"
+ Fix the correct port

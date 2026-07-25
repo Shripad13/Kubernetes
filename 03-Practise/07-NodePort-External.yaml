@@ -1,0 +1,26 @@
+# CLients outside the cluster cannot access ur NodePort even though the required port is open
+
+1. Check Service Details
+ $ kubectl get svc external-nodeport - o wide
+Check Service TYPE & Exposed Port
+
+2. Check the Endpoint
+ $ kubectl get endpoints external-nodeport
+
+ Ensures endpoints for the service Exist, so backend pods are healthy & listening
+ This ensures the issue is not related to missing or misconfigured pod selectors.
+
+3. Confirm NodePort works inside Cluster.
+ $ curl -s http://Node-ip:31080
+
+ Access from within the cluster works, confirming kube-proxy & routing are functioning
+
+4. Test from Outside Network.
+ $ curl -s http://<public-node-ip>:31080
+ Attempt to access through the public node IP fails completely from the external environment.
+
+This proves packets are not reaching the node despite the service running properly.
+
+5. Connect with FIrewall team
+ $ sudo iptables -L -n | grep 31080
+ Once allowed service becomes accessible

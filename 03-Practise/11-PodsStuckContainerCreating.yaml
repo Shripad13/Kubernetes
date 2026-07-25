@@ -1,0 +1,25 @@
+# Your Deployment shows h=the desired number of replicas, but some Pods never become Ready and stay in **ContainerCreating** for a long time
+
+How would you troubleshoot the cause & Fix it.
+
+
+1. Check Deployment adnd Pod Status
+ $ kubectl get deploy my-app
+
+  $ kubectl get pods
+
+Check Pod status is in ContainerCreating state - likely a scheduling, image pull, volume mount issue.
+
+
+2. Describe the Problematic Pod
+ $ kubectl describe pod my-app-abc12
+ 
+ Pod Cannot start because a volume mount failed 
+ (hostPath firectory missing or wrong Type)
+
+
+3. Inspect POD yaml
+
+4. Fix the VOLUME ISSUE either creating or permission 
+
+5. Verify the Pod start 

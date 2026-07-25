@@ -1,0 +1,21 @@
+# Auto Image update & instant roll back
+
+
+#step1: imagePullPolicy 
+
+containers:
+  - name: app
+    image: my-registry/my-app:latest   # when a new version is pushed. k8s pulls the new image automatically
+    imagePullPolicy: Always     # FOrces k8s to check for newest image tag
+
+# step2:    
+containers:
+  - name: app
+    image: my-registry/my-app:latest
+    imagePullPolicy: Always     # FOrces k8s to check for newest image tag
+
+# step3: revisionHistoryLimit --> 
+spec:
+  replicas: 3
+  revisionHistoryLimit: 10     # this will keep up to 10 previous replicaset for instant rollback via kubectl rollout undo
+  
