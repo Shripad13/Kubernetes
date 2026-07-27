@@ -622,6 +622,7 @@ For this you need to install METRICS_SERVER, then it collects the metrics & show
 # How to check the resource utilization of Nodes?
 1️⃣ Using kubectl top nodes (Most Common)
 kubectl get pods -n kube-system | grep metrics
+kubectl top pod <podname>
 
 Page size in DB - what is the maximum data a process can utilized.
 
