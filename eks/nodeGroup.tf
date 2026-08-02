@@ -1,15 +1,15 @@
 # Provision Node Group and attaches this to the EKS
-resource "aws_eks_node_group" "node {
+resource "aws_eks_node_group" "node" {
     depends_on = [aws_eks_addon.vpc_cni] # CNI has to be enables on the cluster first
 
     for_each = var.node_group
 
     cluster_name = aws_eks_cluster.main.name
-    node_group_name = "b58-eks-np-spot-0"
+    node_group_name = each.key
 
     node_role_arn  = aws_iam_role.node-example.arn
-    subnet_ids = ["subnet-00wcnnnv"]
-    instance_types = ["t3.medium"]
+    subnet_ids = var.private_subnet_ids
+    instance_types = each.value.instance_types
     capacity_type = "SPOT"
 
     scaling_config {
@@ -26,10 +26,10 @@ resource "aws_eks_node_group" "node {
 
     lifecycle {
         ignore_changes = [
-            tags,
+            tags 
         ]
     }
-}"
+}
 
 
 #
