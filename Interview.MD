@@ -318,3 +318,12 @@ Rollback triggered	                All pods revert to old version
 
 # sidecar containers -
 The appln produces logs and we want to send those logs to an external system in real time without changing the appln itself.
+
+# Kube-proxy
+Kube-proxy will not assign IP address to Pod.
+In EKS VPC CNI plugin to assign the IP's to Pods.
+
+Kube-proxy is responsible for implementing the k8s services (cluster ip, node port, load balancer) by forwarding the traffic to the pods.
+
+IP tables mode: It uses linux IP table rules to forward the traffic
+IPVS Mode: uses the linux IP virtual server (IPVS) framework, which is optimized for load balancing

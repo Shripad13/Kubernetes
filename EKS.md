@@ -61,4 +61,151 @@ To gain metrics level information on EKS, we need to have Metrics Server Install
 aws eks update-kubeconfig --name ClusterName
 kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 
-# 
+###### Production Architecture  ######
+Internet
+    │
+Route53
+    │
+AWS WAF
+    │
+Application Load Balancer (ALB)
+    │
+AWS Load Balancer Controller
+    │
+ Kubernetes Ingress
+    │
+Kubernetes Services (ClusterIP)
+    │
+  Pods
+
+> How would you expose a service running in EKS to the public internet in a production-safe way?
+
+In a production EKS environment, I would not expose each application directly using a Kubernetes Service of type LoadBalancer. Instead, I would use an Ingress Controller with AWS Application Load Balancer (ALB).
+
+1. Deploy AWS Load Balancer Controller
+Create IAM policy:
+curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json
+
+aws iam create-policy \
+  --policy-name AWSLoadBalancerControllerIAMPolicy \
+  --policy-document file://iam_policy.json
+
+Create Service Account using IRSA:
+eksctl create iamserviceaccount \
+  --cluster my-eks-cluster \
+  --namespace kube-system \
+  --name aws-load-balancer-controller \
+  --attach-policy-arn arn:aws:iam::<ACCOUNT_ID>:policy/AWSLoadBalancerControllerIAMPolicy \
+  --approve
+
+Install controller:
+helm install aws-load-balancer-controller \
+  eks/aws-load-balancer-controller \
+  -n kube-system \
+  --set clusterName=my-eks-cluster
+
+Install via Helm:
+helm repo add eks https://aws.github.io/eks-charts
+helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
+  -n kube-system \
+  --set clusterName=my-eks \
+  --set serviceAccount.create=false \
+  --set serviceAccount.name=aws-load-balancer-controller
+
+Verify Controller:
+kubectl get deployment -n kube-system aws-load-balancer-controller
+kubectl logs -n kube-system deployment/aws-load-balancer-controller      
+
+2. Deploy Application
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  replicas: 3
+
+Service:
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  type: ClusterIP  
+
+
+3. Create Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-ingress
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+spec:
+  ingressClassName: alb
+  rules:
+  - host: app.company.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-service
+            port:
+              number: 80
+
+Apply: kubectl apply -f ingress.yaml
+kubectl get ingress
+kubectl describe ingress app-ingress
+
+AWS automatically provisions:
+ALB, Target Groups, Listeners, Security Groups
+
+4. Enable HTTPS
+Create ACM certificate:
+
+aws acm request-certificate \
+  --domain-name app.company.com \
+  --validation-method DNS
+
+5. Configure Route53
+Create Alias Record:
+app.company.com → ALB DNS Name  
+
+6. Add WAF
+Attach AWS WAF to ALB.
+Protect against:
+SQL Injection, XSS, Bot traffic, DDoS (with AWS Shield)
+
+Q. How do you secure the Ingress?
+I would:
+Use ACM-managed certificates
+Enable HTTPS only
+Attach WAF
+Restrict Security Groups
+Use Network Policies
+Enable IRSA
+Enable ALB access logging
+
+# What have you personally configured?”
+In production on EKS, I expose services through an internet-facing Application Load Balancer managed by the AWS Load Balancer Controller, not by exposing NodePorts directly. 
+The flow is Route53 → ALB → Kubernetes Ingress → ClusterIP Service → Pods. 
+I keep worker nodes in private subnets, terminate TLS at the ALB using ACM certificates, enable HTTP-to-HTTPS redirect, configure ALB health checks against readiness endpoints, and attach AWS WAF for OWASP and rate-limiting protection. 
+The controller runs with IRSA (IAM Roles for Service Accounts) so it has least-privilege AWS permissions. 
+This gives secure public exposure, centralized TLS and WAF, host/path-based routing, and a scalable multi-AZ architecture.
+
+1. How would you route multiple services under one ALB using path-based or host-based rules?
+
+We deploy the AWS Load Balancer Controller using IRSA so it can create AWS ALBs securely. Then we create a Kubernetes Ingress resource with ALB annotations. The ALB listens on HTTPS using an ACM certificate. Based on either the hostname or the URL path, the ALB forwards traffic to different Kubernetes Services.
+
+For example:   
+
+# 2. How do you restrict this ALB so only certain IP ranges or a VPN can reach it?
+"The approach depends on the application's exposure requirements.
+
+For internal enterprise applications, I create an Internal ALB in private subnets so it isn't internet-facing. Users connect through AWS Client VPN or a Site-to-Site VPN before accessing the application.
+
+If a public ALB is required but access should be limited, I restrict inbound access in the ALB Security Group to specific corporate public IP ranges. For additional protection, I attach AWS WAF to enforce IP allow lists, rate limiting, and managed security rules. This provides multiple layers of defense."
+

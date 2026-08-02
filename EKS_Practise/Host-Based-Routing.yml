@@ -1,0 +1,33 @@
+#Better for: api.company.com
+#Separate applications
+#Better cookie isolation
+#Easier TLS management
+
+spec:
+  rules:
+  - host: api.company.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: api-service
+            port:
+              number: 80
+
+  - host: grafana.company.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: grafana
+            port:
+              number: 3000
+
+  - host: app.company.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: frontend
+            port:
+              number: 80

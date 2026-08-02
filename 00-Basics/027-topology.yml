@@ -15,7 +15,7 @@ spec:
     metadata:
       labels:
         app: topology
-   spec:
+  spec:
     topologySpreadConstraints:
     - maxSkew: 1                     
       topologyKey: kubernetes.io/zone
@@ -48,7 +48,7 @@ spec:
     metadata:
       labels:
         app: topology-scheduleanyway
-   spec:
+  spec:
     topologySpreadConstraints:
     - maxSkew: 1                     
       topologyKey: kubernetes.io/zone

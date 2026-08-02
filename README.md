@@ -346,7 +346,7 @@ It will be stored in etcd in base64 encoded format.
  ## what is NAMESPACE in k8s & what are its default namespace, where our resources are going to be created bydefault?
 
 > why Namespaces are required?
-Creating a multiple k8 cluster is not a viable option bcoz its a costly thing, so we create a big cluster in that resources created by multiple teams should not be isolated, all of them belong to same project but operated by different teams, easiest way is creates a NAMESPACES & delegate access to each team to access required namspaces.
+Creating a multiple k8 cluster is not a viable option bcoz its a costly thing, so we create a big cluster in that resources created by multiple teams should  be isolated, all of them belong to same project but operated by different teams, easiest way is creates a NAMESPACES & delegate access to each team to access required namspaces.
 Ex- Payment team can use  payment NS, Cart team can use cart NS & so on.
 
 Fundamental concept of the Namespaces is to isolate the resource.
@@ -401,12 +401,24 @@ Depending on the version of k8, you might see the kube-node-lease namaspace.
     5. If you want to support the version update to the pods then we need to use another type of SET called as DEPLOYMENT SET.
 
 How to scale a replicaset manually?
- $ kubectl scale rs rsName --replica=x
+ $ kubectl scale rs rsName --replicas=x
+ $ kubectl scale replicaset frontend --replicas=5
+ $ kubectl get rs
+ $ kubectl get pods
+ $ kubectl describe rs
+
+Scale with namespace
+ $ kubectl scale rs my-app-rs --replicas=5 -n <namespace>
+
+
+Scale using a Deployment (recommended)
+ $ kubectl scale deployment <deployment-name> --replicas=5
+
 
 ** Lables & Selctors   -
     Lables & Selctors helps in enabling establishment between controller & resources.
 
-2. DEPLOYMENT SET -
+1. DEPLOYMENT SET -
     Deployment set is a wrapper to Replicaset
      1. This ensure the mentioned no. of pods are running all the time.
      2. Deployment set helps in moving the pods from one version to another version     (old version pods will be deleted & new pods will be coming very fast)
@@ -673,6 +685,13 @@ How do you know application is healthy or not?
   2. If the application is not ready, then k8s will stop sending traffic to that pod.
   3. If the application is ready, then k8s will start sending traffic to that pod.   
 
+3. Starup Probe -
+   1. A startup probe is used for applications that take a long time to initialize.
+
+
+Startup probe → Has the application finished starting?
+Readiness probe → Can the application receive traffic?
+Liveness probe → Is the application still healthy, or should it be restarted?
 
 ### Scaling -
 ## HPA: Horizontal Pod Autoscaling ("scaling out")- involves no DOWNTIME.
@@ -1139,7 +1158,7 @@ Stateful apps that rely on hostname or disk
 
 # Deployment Vs Statefulset
 Deployment is used for stateless applications where pods are interchangeable
-StatefulSet is used for stateful applications that require stable identity, ordered deployment, and persistent storage.
+StatefulSet is used for stateful applications that require stable identity, ordered deployment, and persistent volume, stable network identity.
 
 🔹 1. Deployment
 👉 Best for: Stateless applications

@@ -32,7 +32,7 @@ spec:                     # Below of spec is for pods, above the spec is for rep
         ports:
         - containerPort: 80
 
---
+---
 
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
