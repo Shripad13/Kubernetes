@@ -260,7 +260,8 @@ Verify resources - Does the node have capacity?
 
 # Infrastructure & Containers (Linux/K8s)
 
-1. Question: A pod is stuck in CrashLoopBackOff. Walk me through your troubleshooting steps.
+1. Question: A pod is stuck in CrashLoopBackOff
+2. . Walk me through your troubleshooting steps.
 
 Answer: I’d start with kubectl describe pod to check events (OOMKilled, ImagePullBackOff). Then, I’d check kubectl logs --previous to see why the application died, and finally, verify ConfigMaps/Secrets are correctly mounted.
 

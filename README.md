@@ -1188,3 +1188,22 @@ Kubernetes recreates mysql-1
 | Pod deletion order | Random           | Reverse order          |
 | Network identity   | Not stable       | Stable DNS per pod     |
 | Typical use case   | Web/API          | Databases              |
+
+
+
+# Persistent Volume and Persistent Volume Claim in Kubernetes
+In Kubernetes, “A PV represents the actual persistent storage resource in the cluster, while a PVC is a user's request for a certain amount/type of storage; Pods consume PVCs, and Kubernetes binds the PVC to a suitable PV, either statically or through dynamic provisioning.”
+
+1. Provisioning (The PV): An administrator provisions a fixed amount of network or local storage (e.g., 50GB on AWS EBS).
+
+2. Requesting (The PVC): A developer writes a deployment and needs 10GB of space. They do not need to know where the cloud storage is located or how it works. They simply create a PVC asking for 10Gi with ReadWriteOnce access.
+
+|                           | Persistent Volume (PV)                              | Persistent Volume Claim (PVC)               |
+| ------------------------- | --------------------------------------------------- | ------------------------------------------- |
+| **What is it?**           | Actual storage made available to Kubernetes         | Request for storage by an application       |
+| **Created by**            | Admin or dynamically by Kubernetes                  | Developer/application team                  |
+| **Contains**              | Storage capacity, access mode, StorageClass,        |Requested size, access mode, StorageClass
+                            | volume configuration                                |                                             |
+| **Purpose**               | Represents the physical/logical storage             | Asks Kubernetes to provide suitable storage |
+| **Used directly by Pod?** | Usually no                                          | **Yes — Pod references the PVC**            |
+| **Example**               | 100 GiB Azure Disk                                  | “I need 20 GiB of storage”                  |
