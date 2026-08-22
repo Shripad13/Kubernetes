@@ -1,3 +1,5 @@
+You can use ArgoCd Documentation for Initial Setup
+
 # For executing the argo.yaml - 
 1. Create a namespace for argo-cd
    $ kubectl create namespace argocd
@@ -8,6 +10,14 @@
 $ kubectl get all -n argocd
 $ kubectl get svc
 $ kubectl get svc -n argocd
+Look for argo-cd NAME which is in ClusterIP
+$ kubectl edit svc  argocd-server -n argocd ----> change the ClusterIP to NodePort
+$ kubectl get svc -n argocd
+$ kubectl get nodes -o wide            -----> Get the External IP
+
+In Security group open the firewall for NodePort for NodePool , In Inbound Rule, allow the port
+
+
 $ nslookup <EXTERNAL-IP>        (It takes some time to get the external IP)
 
 while true; do nslookup <EXTERNAL-IP>; sleep 0.5; done
@@ -15,8 +25,9 @@ while true; do nslookup <EXTERNAL-IP>; sleep 0.5; done
 $ kubectl get secrets -n argocd  (during login of argoCD UI it requires)
 
 $ kubectl get secret argocd-initial-admin-secret -n argocd -o yaml
+$ kubectl edit secret argocd-initial-admin-secret -n argocd 
 
-password will be in base64 format, decode it using below command -
+password will be in base64 format, decode it using below command - ignore percentile
 $ echo '<base64-encoded-password>' | base64 --decode
 
 username : admin
@@ -29,6 +40,19 @@ password : <decoded-password>
    - Open your web browser and navigate to https://localhost:8080
    - Login with the default username "admin" and the password is the name of the ArgoCD server pod
      $ kubectl get pods -n argocd -l app.kubernetes.io/name=argocd-server -o name | cut -d'/' -f 2
+
+
+Bydefault ArgoCD takes 3 mins for reconcilation,so you can update by following command:
+ $ kubectl edit cm argocd-cm -n argocd
+Add below lines -
+ data:
+   timeout.reconciliation: 10s
+
+
+ACR to AKS Authentication for pulling images to AKS 
+ImagePullSecrets concept if "get ErrPullImage" 
+
+$ kubectl edit pod <podname>
 
 
 HEAD - mean most recent commit on the current branch
@@ -61,6 +85,7 @@ CI Pipeline
 
 # How traditional CICD is differs from GitOps CICD?
 # Reconcilation in GitOps CICD?
+Argo CD polls your Git repository Every 3 Minutes
 # How do you optimize the CICD pipeline for faster deployments & areas to identify?
 Build - Use caching, parallel builds, and incremental builds to speed up the process.
 Test - Run tests in parallel, use test impact analysis to run only relevant tests, and consider using faster test frameworks or mocking external dependencies.
