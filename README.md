@@ -135,7 +135,11 @@ The Worker Plane (The Muscle): Consists of the kubelet (the agent on every node)
 
 # kubelet - 
 Kubelet is the primary "node agent" that runs on each worker node in a Kubernetes cluster. It is responsible for: 
-
+Manages Container Lifecycle  - pull image, start/stop container
+Monitors Pod Health - executes the Liveness, Readiness, and Startup probes
+Volume and Secret Mounts - handles mounting storage volumes, injecting Kubernetes Secrets and binding ConfigMaps
+Node Status Reporting -  report the physical health of its host node -CPU, RAM, 
+Static Pod Execution - based on config file
 
 
 # kube-proxy
