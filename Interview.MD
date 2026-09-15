@@ -1,5 +1,5 @@
 # Explain your Kubernetes setup in your project.
-We have a Kubernetes cluster with 5 nodes, each node has 4 vCPUs and 8GB RAM. We are using Kubernetes version 1.24. The cluster is set up on AWS using EKS (Elastic Kubernetes Service). We have configured the cluster with the following components:
+We have a Kubernetes cluster with 5 nodes, each node has 4 vCPUs and 8GB RAM. We are using Kubernetes version 1.35. The cluster is set up on AWS using EKS (Elastic Kubernetes Service). We have configured the cluster with the following components:
 - **Namespace**: We have created separate namespaces for different environments (dev, staging, production).
 - **Deployments**: We have multiple deployments for our microservices, each with its own deployment configuration, including replica count, resource requests, and limits.
 - **Services**: We are using ClusterIP services for internal communication between microservices and LoadBalancer services for exposing our applications to the internet.
@@ -328,3 +328,18 @@ Kube-proxy is responsible for implementing the k8s services (cluster ip, node po
 
 IP tables mode: It uses linux IP table rules to forward the traffic
 IPVS Mode: uses the linux IP virtual server (IPVS) framework, which is optimized for load balancing
+
+
+
+# The 3 Main Ways to Expose Your App
+ClusterIP : Gives the app an internal IP address.
+NodePort : Opens a specific, matching port on every single computer (Node) in your cluster.
+LoadBalancer : Asks your cloud provider (like AWS, Google Cloud, or Azure) to spin up a public internet router with a public IP address.
+
+Example 1: 
+Making a web app publicIf you have a website deployment named my-web-site running on port 8080, and you want the whole internet to see it on standard web port 80, you would run:
+
+ $ kubectl expose deployment my-web-site --port=80 --target-port=8080 --type=LoadBalancer
+
+Generating a configuration file without applying it:
+ $ kubectl expose deployment my-web-site --port=80 --type=ClusterIP --dry-run=client -o yaml > service.yaml

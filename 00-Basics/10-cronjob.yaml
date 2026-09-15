@@ -5,7 +5,7 @@ kind: CronJob
 metadata:
   name: hello
 spec:
-  schedule: "* * * * *"       # Here schedule can be given with linux cron schedule format
+  schedule: "*/2 * * * *"       # Here schedule can be given with linux cron schedule format
   jobTemplate:
     spec:
       template:

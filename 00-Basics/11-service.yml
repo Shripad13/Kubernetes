@@ -31,7 +31,7 @@ spec:                     # Below of spec is for pods, above the spec is for rep
 apiVersion: v1
 kind: Service
 metadata:
-  name: nginx-svc
+  name: nginx-deployment-svc
 spec:
   selector:
     app: nginx          # This service will forward the requests to pods which have this label
@@ -40,3 +40,9 @@ spec:
       protocol: TCP
       port: 80           # service listeners on port 80
       targetPort: 80   # requests received by (80) this service will be forwarded to pods port 80
+
+# If you dont mention service, it will take by default as CLusterIP SVC
+
+#kubectl apply -f 11-service.yml ; kubectl get svc
+#kubectl get pods -o wide
+#kubectl describe svc nginx-svc

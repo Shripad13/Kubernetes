@@ -25,3 +25,7 @@ spec:                     # Below of spec is for pods, above the spec is for rep
     rollingUpdate:
       maxUnavailable: 2            # At a time 2 pods can be unavailable during the update
       maxSurge: 1
+
+
+# In Rolling update , Users will experience both versions for sometime, 
+# because pods will upgrade one by one

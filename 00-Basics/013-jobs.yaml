@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pi
+spec:
+  template:
+    spec:
+      containers:
+      - name: pi
+        image: perl:5.34.0
+        command: ["perl",  "-Mbignum=bpi", "-wle", "print bpi(2000)"]
+      restartPolicy: Never   # don't restart the container.
+  backoffLimit: 4    #After 4 retries, the Job is considered failed
+
+
+# This is equivalent to:
+# perl -Mbignum=bpi -wle "print bpi(2000)"
+# - "perl"          -> starts Perl
+# - "-Mbignum=bpi"  -> loads the bignum module and bpi function
+# - "-wle"          -> Perl options
+# - "print bpi(2000)" -> calculates and prints Pi to 2000 digits

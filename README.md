@@ -368,7 +368,19 @@ Depending on the version of k8, you might see the kube-node-lease namaspace.
 1. default - The default namespace for objects that dont have a specified namespace. This is the namespace thats referenced by default for every k8 command.
 
 2. kube-system - Used for k8s components such as kube-dns & kube-proxy, api-server, controller manager, scheduler.
+    This is where te control plane (master) components and core cluster services typically run:
+      kube-apiserver - Exposes the kubernetes API
+      kube-scheduler - Assign pods to nodes
+      kube-controller-manager  - Runs controllers to manage cluster state.
+      etcd - Key-Value store for cluster data (sometimes run separately)
+      CoreDNS - Cluster DNS service
+      cloud-controller-manager - Interacts with cloud provider API's (if used)
+
 3. kube-public - Used for public resources, such as info needed to communicate with the k8s API.
+      Mostly empty by default.
+      Publicly readable across all users; used to expose cluster info (like the cluster info ConfigMap).
+      Not for hosting control plane components.
+
 
 ## how to see all the resources of a specific namespace?
  $ kubectl get namespace 
@@ -389,7 +401,38 @@ Depending on the version of k8, you might see the kube-node-lease namaspace.
  in output you can check NAMESPACES column true or false?
 
 
+# How to run a specific command on a pod non-interactively?
+    $ kubectl exec podName -- commandtoExecute
+    $ kubectl exec podName -- env
+
+# How to enter into pod interactively?
+    $ kubectl exec -it podName -- bash
+    once you inside pod run "env" to check the properties.
+
+
+  Some containers will or will not be having the shell prompt.
+  In banking projects, containers will not run as shell,  troubleshoot little difficult, you need to integrate with with shell based containers.
+
+
+# ConfigMap:
+> whenever you have a common set of properties that needs to be supplied across the components of the k8s, then rather supplying manually, we tend to create a resource called as ConfigMap & we inject this configMap into the pods
+
+ $ kubectl get configmap    ---> will show default configmap
+ $ kubectl get configmap -n nameSpacename
+you can have more than one config map
+
+
 ## We dont create pods in k8 directly? Then how?
+They would be done by using SETS.
+> If your pods are provisioned by SETS:
+  1. They will take care of the pods availability, Even If something got deleted, they create it automatically.
+  2. If you want to scale up or down, sets will take care of it.
+  3. If you want a single pod per node as per the nodes scalability.
+  4. They help you in moving pods from one version to another version (v1 to v2)
+
+> Keep in mind, we never create pods directly, we will deploy SETS & sets will create the pods and these pods will be managed by SETS.
+
+
   We use SETS:
    There are 4 types of sets & these sets will create the  PODS in k8, Bcoz of the advantages to maintain the replica count of the pods.
      1. REPLICA SET
@@ -403,6 +446,15 @@ Depending on the version of k8, you might see the kube-node-lease namaspace.
     3. Using replica-set, we cannot update the existing running pods from X to Y version,Only replicapset will be configured but its not going to impact the pods. But new pods that are going to be provisioned by this replica-set will have the image that will update wth new version.
     4. We only use replica-set just to make sure the committed no. of pods are running all the time or not.
     5. If you want to support the version update to the pods then we need to use another type of SET called as DEPLOYMENT SET.
+
+- A ReplicaSet is a higher-level abstraction that manages a set of identical pods.
+- It ensures that a specified number of pod replicas are running at any given time.
+- If a pod fails or is deleted, the ReplicaSet automatically creates a new pod to replace it.
+- ReplicaSets are often used in conjunction with Deployments, which provide declarative updates to ReplicaSets and Pods.
+- ReplicaSets are defined using a YAML manifest, similar to Pods.
+- The manifest includes the desired number of replicas, a selector to identify the pods it manages, and a pod template that defines the pod's configuration.
+- ReplicaSets can be scaled up or down by changing the number of replicas in the manifest.
+- Replica sets don't allow you to use the same pod template for different replicas. 
 
 How to scale a replicaset manually?
  $ kubectl scale rs rsName --replicas=x
@@ -419,8 +471,10 @@ Scale using a Deployment (recommended)
  $ kubectl scale deployment <deployment-name> --replicas=5
 
 
-** Lables & Selctors   -
-    Lables & Selctors helps in enabling establishment between controller & resources.
+# Lables & Selectors   -
+    Lables & Selectors helps in enabling establishment between controller & resources.
+
+    selectors tells whatever the label pods have matches with the sets and its goes and attaches.
 
 1. DEPLOYMENT SET -
     Deployment set is a wrapper to Replicaset
@@ -435,6 +489,9 @@ Scale using a Deployment (recommended)
 
  ** If you are not interested, we can also go with RECREATE STRATEGY in Deployment, whenever a new version comes up, all the old versions will be deleted at a time & new one will be created (There would be some Downtime)
 
+In ROlling update: Moves Pods from one version to another version sequentially, we would encounter near zero downtime.
+But during the upgrade users will experience bth the version of application.
+
  This type of deployment called as ROLLING update DEPLOYMENT which is default deployment strategy in kubernetes.
 
 
@@ -447,6 +504,9 @@ Scale using a Deployment (recommended)
  It happens one by one within fractions of seconds, so that there is no downtime for the application.     
  Deployment in the backend is creating a new replica-set & then scaling down the old replica-set.
 
+Recreate Strategy: Deletes all the pods of ther set at a time & recreate the pods with newer version. It involves few seconds of  downtime
+
+Blue-Green Deployment - Does not involve Downtime, Application will be switch over from Blue Infra to Green Infra through DNS cutover.
 
 # Deployment Types -
   1. Rolling Update
@@ -509,6 +569,13 @@ Handles load balancing across Pods
 Decouples clients from changing Pod IPs (since Pods are ephemeral)
 Pods come and go. Services stay.
 
+Frontend (Public): In this case we will go with k8s SVC of type LB (Which is going to provision LB)
+
+Backend (Internal): In this case, we will go with k8s SVC of type CLusterIP (Which is only accessed by services inside the cluster)
+
+North-South Communication: communication from Internet to service on k8s
+East-West Communication: Communication between services on kubernetes
+
 # Why Services Are Needed
 Without a Service:
 Pods get new IPs when recreated
@@ -563,6 +630,11 @@ A Job in Kubernetes is a workload resource that:
 👉 Is meant for finite / batch tasks, not long-running apps
 Once the task is done, the Job is considered complete.
 
+Job is a also a k8s wrapper, that provision a pod to execute some taks and then goes to completed state & not like regular pods that keeps running.
+
+Deleting the Job will clean up the pods it created.
+Suspending a Job will delete its active Pods until the Job is resumed again.
+
 
 When to Use a Job (Very Important)
 Use a Job when:
@@ -571,6 +643,8 @@ You need reliable execution
 You care about successful completion
 
 Examples:
+To load the schema every day at particular time
+Pod should run to send email for every 1 hr
 Database migrations
 Backup script
 Batch processing
@@ -595,8 +669,22 @@ Jobs creates the pod.
 
 CronJob is meant for performing regular scheduled actions such as backups, report generation, and so on. One CronJob object is like one line of a crontab (cron table) file on a Unix system. It runs a Job periodically on a given schedule, written in Cron format.
 
+As per schedule, cronjob creates a job --> Job Creates the pod -->Pod goes to completed state
+
+ $  kubectl get cronjobs; kubectl get jobs; kubectl get pods
 
 > We should neither hardcode the credentials on Manifest files nor on Vault, bcoz when if user has access to bash/shell, they still can access the credentials, So in K8s we have Role-Based Access Control (RBAC). 
+
+# ┌───────────── minute (0 - 59)
+# │ ┌───────────── hour (0 - 23)
+# │ │ ┌───────────── day of the month (1 - 31)
+# │ │ │ ┌───────────── month (1 - 12)
+# │ │ │ │ ┌───────────── day of the week (0 - 6) (Sunday to Saturday)
+# │ │ │ │ │                                   OR sun, mon, tue, wed, thu, fri, sat
+# │ │ │ │ │
+# │ │ │ │ │
+# * * * * *
+
 
 
 ## Headless Service in Kubernetes- 
