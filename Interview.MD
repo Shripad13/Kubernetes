@@ -100,25 +100,25 @@ If a Deployment is configured to run 5 Pods but only 3 are running, there could 
 2. Check Node Resources:
 Use kubectl describe nodes to check if there are enough CPU and memory resources available on the nodes to schedule the additional Pods.
 1. Pod Scheduling Issues:
-2. Check Pod Events:
+ Check Pod Events:
 Use kubectl describe deployment <deployment-name> to view events related to the Deployment. Look for any scheduling errors or issues preventing Pods from being created.
-1. Check Pod Status:
-2. Use kubectl get pods to see the status of all Pods. Look for Pods in Pending or Failed states and investigate further using kubectl describe pod <pod-name>.
-3. Image Pull Errors:
-4. Check Container Logs:
+   Check Pod Status:
+Use kubectl get pods to see the status of all Pods. Look for Pods in Pending or Failed states and investigate further using kubectl describe pod <pod-name>.
+2. Image Pull Errors:
+  Check Container Logs:
 Use kubectl logs <pod-name> to check for any errors related to pulling the container image.
-1. Check Events:    
+  Check Events:    
 Use kubectl describe pod <pod-name> to see if there are any image pull errors in the events section.
-1. Node Affinity or Taints/Tolerations:
-2.  Check Node Affinity Rules:
+3. Node Affinity or Taints/Tolerations:
+  Check Node Affinity Rules:
 Use kubectl describe deployment <deployment-name> to check if there are any node affinity rules or taints/tolerations that might be preventing Pods from being scheduled on certain nodes.
-1.  Check Node Taints:    
+  Check Node Taints:    
 Use kubectl describe nodes to see if any nodes are tainted in a way that prevents Pods from being scheduled.
-1.  Deployment Configuration Issues:
-2.  Check Deployment Spec:
+4.  Deployment Configuration Issues:
+  Check Deployment Spec:
 Review the Deployment YAML file to ensure that the replica count is correctly set to 5 and that there are no misconfigurations.
-1.  Check for Rollout Status:   
-2.  Use kubectl rollout status deployment/<deployment-name> to check if the Deployment is in a healthy state.
+  Check for Rollout Status:   
+Use kubectl rollout status deployment/<deployment-name> to check if the Deployment is in a healthy state.
 By systematically checking these components, you should be able to identify the root cause of why only  3 Pods are running instead of the desired 5 and take appropriate action to resolve the issue.
 
 

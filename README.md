@@ -1299,3 +1299,18 @@ In Kubernetes, “A PV represents the actual persistent storage resource in the 
 | **Purpose**               | Represents the physical/logical storage             | Asks Kubernetes to provide suitable storage |
 | **Used directly by Pod?** | Usually no                                          | **Yes — Pod references the PVC**            |
 | **Example**               | 100 GiB Azure Disk                                  | “I need 20 GiB of storage”                  |
+
+
+Here is the direct breakdown of the four access modes:
+1. ReadWriteOnce (RWO): The volume can be mounted as read-write by a single node at a time. Multiple pods can access the volume simultaneously only if they are all running on that same node.
+  One pod/group of podsMust be on the same single node
+
+2. ReadOnlyMany (ROX): The volume can be mounted as read-only by many nodes simultaneously.
+  Many pods (Read-only)Allowed across multiple nodes
+
+
+3. ReadWriteMany (RWX): The volume can be mounted as read-write by many nodes simultaneously. This is commonly used for shared storage systems like NFS.
+   Many pods (Read-Write)Allowed across multiple nodes
+
+4. ReadWriteOncePod (RWOP): The volume can be mounted as read-write by a single Pod across the entire cluster. 
+   Strictly one podRestricts access cluster-wide

@@ -42,3 +42,7 @@ spec:
       protocol: TCP
       port: 80           # service listeners on port 80
       targetPort: 80   # requests received by (80) this service will be forwarded to pods port 80
+
+# If you dont mention the target Port, It will take the same port as the service port
+# If you dont mention the type, it will take the default type as CLusterIP
+# If your service is ClusterIP, then this can only be accessed by or from the pods with in the cluster only.
