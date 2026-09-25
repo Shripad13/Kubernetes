@@ -1,0 +1,48 @@
+## It will not work bcoz we running on minikube which does not support LoadBalancer service type by default
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment-np
+  labels:            # Lables for the replicaset
+    app: nginx-np
+spec:                     # Below of spec is for pods, above the spec is for replicaset
+  replicas: 8
+  selector:
+    matchLabels:      # This defines whatever the pods that have "app:nginx can go & attach to the set of services having the similar label"
+      app: nginx-np
+  template:
+    metadata:
+      labels:        # Lables for the pods created by the replicaset
+        app: nginx-np
+    spec:
+      containers:
+      - name: nginx-np
+        image: docker.io/nginx:perl
+#        image: docker.io/nginx:otel # Uncomment this line & comment above line to use otel image & check the deployment        
+        ports:
+        - containerPort: 80
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2            # At a time 2 pods can be unavailable during the update
+
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-svc
+spec:
+  selector:
+    app: nginx-np         # This service will forward the requests to pods which have this label
+  type: NodePort
+  ports:
+    - port: 80           # service listeners on port 80
+      targetPort: 80   # requests received by (80) this service will be forwarded to pods port 80
+      nodePort: 30007 # IP address of node & 
+
+# Range - 30000-32767      
+# nodeport forward the request to Pod service (Port) and then specific target port
+
