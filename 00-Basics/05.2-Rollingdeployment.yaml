@@ -20,7 +20,7 @@ spec:                     # Below of spec is for pods, above the spec is for rep
 #        image: docker.io/nginx:otel # Uncomment this line & comment above line to use otel image & check the deployment        
         ports:
         - containerPort: 80
-  strategy:
+  strategy: 
     type: RollingUpdate
     rollingUpdate:
       maxUnavailable: 2            # At a time 2 pods can be unavailable during the update

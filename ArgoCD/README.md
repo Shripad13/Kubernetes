@@ -52,7 +52,7 @@ Add below lines -
 ACR to AKS Authentication for pulling images to AKS 
 ImagePullSecrets concept if "get ErrPullImage" 
 
-$ kubectl edit pod <podname>
+ $ kubectl edit pod <podname>
 
 
 HEAD - mean most recent commit on the current branch
@@ -97,3 +97,30 @@ Docker Layer Caching - Use Docker layer caching to speed up image builds.
 Docker Image Size - Optimize Docker images to reduce build and deployment time. Multistage builds, minimal base images, and removing unnecessary files can help reduce image size and speed up deployments.
 Network latency - Optimize network latency by using regional resources and minimizing data transfer between stages.
 Overall, focus on parallelization, caching, and automation to optimize the CI/CD pipeline for faster deployments while maintaining quality and security.
+
+
+# HELM ROLLBACK
+To use Helm charts for rolling back a deployment, run the command 
+ $ helm rollback <RELEASE_NAME> <REVISION_NUMBER>.
+
+ Helm automatically tracks every deployment, upgrade, or rollback as a unique incremental revision inside the cluster.
+
+1. View Deployment History  - $ helm history <RELEASE_NAME> --namespace <NAMESPACE>
+2. Execute the Rollback  -    $ helm rollback myapp 2 --namespace production
+3. Confirm that the deployment reverted successfully - $ helm status myapp --namespace production
+
+
+ $ helm rollback myapp 2 --wait
+ $ helm rollback myapp 2 --timeout 3m
+ $ helm rollback myapp 2 --cleanup-on-fail
+ $ helm rollback myapp 2 --dry-run
+
+#
+You can instruct Helm to roll back automatically during an upgrade if health checks fail. Combine --wait with the --rollback-on-failure flag inside your CI/CD pipelines: 
+
+ helm upgrade myapp ./charts/myapp \
+  --install \
+  --wait \
+  --timeout 5m \
+  --rollback-on-failure \
+  --namespace production
