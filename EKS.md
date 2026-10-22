@@ -195,7 +195,7 @@ The flow is Route53 → ALB → Kubernetes Ingress → ClusterIP Service → Pod
 I keep worker nodes in private subnets, terminate TLS at the ALB using ACM certificates, enable HTTP-to-HTTPS redirect, configure ALB health checks against readiness endpoints, and attach AWS WAF for OWASP and rate-limiting protection. 
 The controller runs with IRSA (IAM Roles for Service Accounts) so it has least-privilege AWS permissions. 
 This gives secure public exposure, centralized TLS and WAF, host/path-based routing, and a scalable multi-AZ architecture.
-
+ 
 1. How would you route multiple services under one ALB using path-based or host-based rules?
 
 We deploy the AWS Load Balancer Controller using IRSA so it can create AWS ALBs securely. Then we create a Kubernetes Ingress resource with ALB annotations. The ALB listens on HTTPS using an ACM certificate. Based on either the hostname or the URL path, the ALB forwards traffic to different Kubernetes Services.
