@@ -158,6 +158,9 @@ Client → Service ClusterIP → kube-proxy → One of the backend Pods
 kube-proxy Supports ClusterIP, NodePort, LoadBalancer services.
 
 
+# Kube-Config -
+A kubeconfig file is a YAML configuration file that organizes all the details needed for command-line tools (like kubectl) and cluster components to locate, authenticate with, and communicate with a Kubernetes cluster's API server.
+
 # CoreDNS -
 CoreDNS is the DNS server inside a Kubernetes cluster.
 It allows Pods and Services to discover each other using names instead of IP addresses.

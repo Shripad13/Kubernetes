@@ -370,3 +370,64 @@ Part 2: What "Highly Secure" Means
 • Zero-Trust Network Policies: By default, all pods in a Kubernetes cluster can talk to each other. A secure cluster enforces explicit Network Policies (firewall rules inside the cluster architecture) that isolate namespaces and prevent an application breach in one pod from laterally pivoting to a database pod.
 
 • Workload Isolation & Immutable Supply Chain: Containers run using non-root privileges with restrictive runtime security profiles (like AppArmor or Seccomp) to prevent kernel exploits.
+
+
+# what happens after running the kubectl apply -f deployment.yml command?
+
+Kubernetes processes the YAML manifest and creates or updates the resources defined in it. This follows the declarative approach, meaning Kubernetes tries to make the actual cluster state match the desired state specified in the YAML file.
+
+Step-by-step execution:
+
+Step 1: kubectl reads the YAML file
+
+The kubectl client reads deployment.yml and parses the Kubernetes resource definitions.
+
+Step 2: Request goes to API Server
+
+Kubectl sends an API request to the Kubernetes API Server.
+
+The API Server:
+- Authenticates the user.
+- Authorizes the request using RBAC.
+- Performs admission control and validation.
+- Validates the resource configuration.
+
+
+Step 3: Desired state is stored in etcd
+The API Server persists the updated resource configuration in etcd, Kubernetes' distributed key-value store.
+
+Step 4: Deployment Controller detects changes
+
+The Deployment Controller detects the new Deployment or updated desired state.
+
+It creates or updates a ReplicaSet to maintain the required number of replicas.
+
+Step 5: ReplicaSet creates Pods
+
+The ReplicaSet Controller ensures that the required number of Pods are created.
+
+Step 6: Scheduler assigns Pods to nodes
+
+The Kubernetes Scheduler selects appropriate worker nodes based on:
+- CPU and memory requests.
+- Node availability.
+- Node selectors and affinity.
+- Taints and tolerations.
+
+Step 7: Kubelet starts containers
+
+On the selected worker node:
+- Kubelet detects the scheduled Pod.
+- Container runtime pulls the image if needed.
+- Containers are created and started.
+- Volumes and configurations are mounted.
+
+Step 8: Health checks are performed
+
+Kubernetes checks readiness, liveness and startup probes if configured.
+
+Once the readiness probe succeeds, the Pod becomes eligible to receive traffic through its Service.
+
+Step 9: Application becomes accessible
+
+If the application has a Service and Ingress configured, traffic can reach the application through the configured networking path.
